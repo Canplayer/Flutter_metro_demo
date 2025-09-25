@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metro_demo/hub_page.dart';
+import 'package:metro_demo/panorama_page.dart';
 import 'package:metro_ui/app.dart';
 import 'package:metro_ui/button.dart';
 import 'package:metro_ui/page.dart';
@@ -163,13 +163,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     // }
     //结束await后执行动画重置
     await Future.delayed(const Duration(milliseconds: 500));
-
-    Future.delayed(const Duration(milliseconds: 50), () {
       for (var controller in _controllers) {
-        //controller.reset();
-        controller.reverse();
+        controller.reset();
       }
-    });
   }
 
   //获取相对于屏幕左中心的偏移量
@@ -190,37 +186,26 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
+      onDidPush: () async {
+        print('跳转');
+      },
       onDidPop: () async {
         print('返回');
-        return;
       },
       onDidPopNext: () async {
         print('前进');
-        return;
       },
-      onDidPush: () async {
-        print('跳转');
-        return;
+      onDidPushNext: <T>(T data) async {
+        //如果arguments存在arguments是int类型
+        if (data is int) {
+          await _startAnimations(_keys[data]);
+        }
       },
-      onDidPushNext: () async {
-        print('前进跳转');
-        return;
-      },
-      // backgroundColor: const Color.fromARGB(0, 0, 0, 0),
-
+      
       body: Column(
         children: [
-          // SizedBox(
-          //   height: 100,
-          //   width: 400,
-          //   child: MetroButton(
-          //     child: Text('Hello',
-          //         style: const TextStyle(fontSize: 30, color: Colors.white)),
-          //   ),
-          // ),
-
           MetroButton(
-            child: Text('Hello',
+            child: const Text('Hello',
                 style: TextStyle(fontSize: 30, color: Colors.white)),
             onTap: () {
               //打印屏幕尺寸
@@ -254,28 +239,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             height: 168,
                             child: Tile(
                               allowBack: true,
-                              onTap: () async {
-                                //等待两秒
-                                await _startAnimations(_keys[index]);
-                                // await Navigator.of(context).push(
-                                //   // MetroPageRoute(
-                                //   //   builder: (context) {
-                                //   //     return const PanoramaPage();
-                                //   //   },
-                                //   // ),
-                                //   MaterialPageRoute(builder: (context) {
-                                //     return const PanoramaPage();
-                                //   }),
-                                // );
+                              onTap: () {
                                 metroPagePush(
                                   context,
-                                    MetroPageRoute(
+                                  MetroPageRoute(
                                     builder: (context) {
                                       return const PanoramaPage();
                                     },
                                   ),
+                                  //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
+                                  //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
+                                  dataToPass: index,
                                 );
-                                print('跳转完成');
                               },
                               child: Container(
                                 color: Theme.of(context).colorScheme.primary,

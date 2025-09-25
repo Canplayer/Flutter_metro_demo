@@ -96,6 +96,18 @@ class _PanoramaPageState extends State<PanoramaPage>
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
+      // onWillPop: () async {
+      //   return true; //允许返回
+      // },
+      onDidPush: () async {
+      },
+      // onDidPop: () async {
+      //   //延长3秒
+      //   await Future.delayed(const Duration(milliseconds: 3000));
+      // },
+      onDidPopNext: () async {
+      },
+      
       body: Center(
         child: Transform(
           transform: Matrix4.rotationY(_rotationAnimation.value),
@@ -303,5 +315,3 @@ class DelegatedTransition {
 //   // TODO: implement transitionDuration
 //   Duration get transitionDuration => throw UnimplementedError();
 // }
-
-
