@@ -99,14 +99,13 @@ class _PanoramaPageState extends State<PanoramaPage>
       // onWillPop: () async {
       //   return true; //允许返回
       // },
-      onDidPush: () async {
-      },
       // onDidPop: () async {
       //   //延长3秒
       //   await Future.delayed(const Duration(milliseconds: 3000));
       // },
       onDidPopNext: () async {
       },
+      
       
       body: Center(
         child: Transform(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metro_demo/panorama_page.dart';
+import 'package:metro_demo/phoneapplication_page.dart';
 import 'package:metro_ui/app.dart';
 import 'package:metro_ui/button.dart';
 import 'package:metro_ui/page.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [],
       title: 'Flutter Demo',
       color: Colors.red,
+      themeMode: MetroThemeMode.light,
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -46,43 +48,43 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   final List<GlobalKey> _keys = [];
-  //bool _isAddPostFrame = false; //渲染完成回调
 
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
   late List<double> _edgeOffset;
 
-  Map<String, IconData> iconMap = {
-    'Phone': Icons.phone,
-    'Email': Icons.email,
-    'Map': Icons.map,
-    'Camera': Icons.camera,
-    'Calendar': Icons.calendar_today,
-    'Clock': Icons.access_time,
-    'Music': Icons.music_note,
-    'People': Icons.people,
-    'Weather': Icons.wb_sunny,
-    'Store': Icons.store,
-    'News': Icons.article,
-    'Photos': Icons.photo,
-    'Videos': Icons.video_collection,
-    'Settings': Icons.settings,
-    'Wallet': Icons.account_balance_wallet,
-    'Calculator': Icons.calculate,
-    'Alarms': Icons.alarm,
-    'Notes': Icons.note,
-    'Reminders': Icons.notifications,
-    'Tasks': Icons.task,
-    'Sports': Icons.sports_soccer,
-    'Health': Icons.favorite,
-  };
+
+  List<App> apps = [
+    App(name: 'Panorama', icon: Icons.phone, page: const PanoramaPage()),
+    App(name: 'About', icon: Icons.email, page: const PhoneApplicationPage()),
+    App(name: 'Map', icon: Icons.map, page: const PanoramaPage()),
+    App(name: 'Camera', icon: Icons.camera, page: const PanoramaPage()),
+    App(name: 'Calendar', icon: Icons.calendar_today, page: const PanoramaPage()),
+    App(name: 'Clock', icon: Icons.access_time, page: const PanoramaPage()),
+    App(name: 'Music', icon: Icons.music_note, page: const PanoramaPage()),
+    App(name: 'People', icon: Icons.people, page: const PanoramaPage()),
+    App(name: 'Weather', icon: Icons.wb_sunny, page: const PanoramaPage()),
+    App(name: 'Store', icon: Icons.store, page: const PanoramaPage()),
+    App(name: 'News', icon: Icons.article, page: const PanoramaPage()),
+    App(name: 'Photos', icon: Icons.photo, page: const PanoramaPage()),
+    App(name: 'Videos', icon: Icons.video_collection, page: const PanoramaPage()),
+    App(name: 'Settings', icon: Icons.settings, page: const PanoramaPage()),
+    App(name: 'Wallet', icon: Icons.account_balance_wallet, page: const PanoramaPage()),
+    App(name: 'Calculator', icon: Icons.calculate, page: const PanoramaPage()),
+    App(name: 'Alarms', icon: Icons.alarm, page: const PanoramaPage()),
+    App(name: 'Notes', icon: Icons.note, page: const PanoramaPage()),
+    App(name: 'Reminders', icon: Icons.notifications, page: const PanoramaPage()),
+    App(name: 'Tasks', icon: Icons.task, page: const PanoramaPage()),
+    App(name: 'Sports', icon: Icons.sports_soccer, page: const PanoramaPage()),
+    App(name: 'Health', icon: Icons.favorite, page: const PanoramaPage()),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _keys.addAll(List.generate(iconMap.length, (index) => GlobalKey()));
+    _keys.addAll(List.generate(apps.length, (index) => GlobalKey()));
 
-    _controllers = List.generate(iconMap.length, (index) {
+    _controllers = List.generate(apps.length, (index) {
       return AnimationController(
         duration: const Duration(milliseconds: 500),
         vsync: this,
@@ -99,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ));
     }).toList();
 
-    _edgeOffset = List.generate(iconMap.length, (index) {
+    _edgeOffset = List.generate(apps.length, (index) {
       return 0.0;
     });
 
@@ -129,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   //sync方法
   Future<void> _startAnimations(GlobalKey tapKey) async {
-    _edgeOffset = List.generate(iconMap.length, (index) {
+    _edgeOffset = List.generate(apps.length, (index) {
       return _getAbsolutePosition(_keys[index]).dx;
     });
 
@@ -186,15 +188,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
-      onDidPush: () async {
-        print('跳转');
-      },
-      onDidPop: () async {
-        print('返回');
-      },
-      onDidPopNext: () async {
-        print('前进');
-      },
       onDidPushNext: <T>(T data) async {
         //如果arguments存在arguments是int类型
         if (data is int) {
@@ -224,8 +217,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   spacing: 9,
                   runSpacing: 9,
                   clipBehavior: Clip.none,
-                  children: iconMap.keys.map((String key) {
-                    int index = iconMap.keys.toList().indexOf(key);
+                  children: apps.map((App app) {
+                    int index = apps.indexOf(app);
                     return AnimatedBuilder(
                       animation: _animations[index],
                       builder: (context, child) {
@@ -244,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                   context,
                                   MetroPageRoute(
                                     builder: (context) {
-                                      return const PanoramaPage();
+                                      return app.page;
                                     },
                                   ),
                                   //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
@@ -261,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                     //图标：居中
                                     Center(
                                       child: Icon(
-                                        iconMap[key],
+                                        app.icon,
                                         size: 100,
                                         color: Colors.white,
                                       ),
@@ -271,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                       left: 10,
                                       bottom: 10,
                                       child: Text(
-                                        key,
+                                        app.name,
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 20,
@@ -296,3 +289,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 }
+
+class App {
+  //储存名字、图标、路由
+  String name;
+  IconData icon;
+  Widget page;
+  App({required this.name, required this.icon, required this.page});
+}
+
