@@ -20,9 +20,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MetroApp(
       navigatorObservers: [],
+      //fontFamily: 'Segoe UI',
+      
       title: 'Flutter Demo',
       color: Colors.red,
-      themeMode: MetroThemeMode.light,
+      //themeMode: MetroThemeMode.light,
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
