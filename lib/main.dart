@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metro_demo/panorama_page.dart';
 import 'package:metro_demo/phoneapplication_page.dart';
+import 'package:metro_demo/switch_demo_page.dart';
 import 'package:metro_ui/app.dart';
 import 'package:metro_ui/button.dart';
 import 'package:metro_ui/page.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       
       title: 'Flutter Demo',
       color: Colors.red,
-      //themeMode: MetroThemeMode.light,
+      themeMode: MetroThemeMode.light,
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -59,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<App> apps = [
     App(name: 'Panorama', icon: Icons.phone, page: const PanoramaPage()),
     App(name: 'About', icon: Icons.email, page: const PhoneApplicationPage()),
+    App(name: 'Switch Demo', icon: Icons.toggle_on, page: const SwitchDemoPage()),
     App(name: 'Map', icon: Icons.map, page: const PanoramaPage()),
     App(name: 'Camera', icon: Icons.camera, page: const PanoramaPage()),
     App(name: 'Calendar', icon: Icons.calendar_today, page: const PanoramaPage()),
@@ -199,9 +201,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       
       body: Column(
         children: [
+          const SizedBox(height: 80),
           MetroButton(
-            child: const Text('Hello',
-                style: TextStyle(fontSize: 30, color: Colors.white)),
+            child: const Text('Welcome to my demo'),
             onTap: () {
               //打印屏幕尺寸
               print(MediaQuery.of(context).size);
@@ -211,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           //TextButton(onPressed: (){}, child: Text('123')),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 80),
+              padding: const EdgeInsets.only(top: 20),
               clipBehavior: Clip.none,
               child: Center(
                 //padding: const EdgeInsets.all(20),
