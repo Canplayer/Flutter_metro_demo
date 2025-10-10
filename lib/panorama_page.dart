@@ -156,7 +156,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                         style: TextStyle(
                           fontWeight: FontWeight.w200,
                           fontSize: 120,
-                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -172,7 +171,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 50,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -180,7 +178,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -188,7 +185,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -196,7 +192,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -204,7 +199,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           MetroButton(

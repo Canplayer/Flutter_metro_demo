@@ -18,7 +18,7 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
-      backgroundColor: Colors.black87,
+      //backgroundColor: Colors.black87,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -30,7 +30,6 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 40),
@@ -40,7 +39,7 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 children: [
                   const Text(
                     '开关 1: ',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(fontSize: 18),
                   ),
                   CustomSwitch(
                     value: _switch1Value,
@@ -68,7 +67,7 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 children: [
                   const Text(
                     '开关 2: ',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(fontSize: 18),
                   ),
                   CustomSwitch(
                     value: _switch2Value,
@@ -98,7 +97,7 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 children: [
                   const Text(
                     '开关 3 (禁用): ',
-                    style: TextStyle(fontSize: 18, color: Colors.white54),
+                    style: TextStyle(fontSize: 18),
                   ),
                   CustomSwitch(
                     value: _switch3Value,
@@ -109,8 +108,7 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                   Text(
                     _switch3Value ? '开启' : '关闭',
                     style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white54,
+                      fontSize: 16
                     ),
                   ),
                 ],
@@ -123,7 +121,6 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 10),
@@ -134,7 +131,6 @@ class _SwitchDemoPageState extends State<SwitchDemoPage> {
                 '• 支持自定义激活和非激活状态的颜色',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white70,
                   height: 1.5,
                 ),
               ),

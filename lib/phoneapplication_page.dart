@@ -33,9 +33,9 @@ class _PhoneApplicationPageState extends State<PhoneApplicationPage> {
               //背景图片
               SizedBox(
                 width: 384,
-                height: 800,
+                height: 640,
                 child: Opacity(
-                  opacity: 0, // 50% 透明度
+                  opacity: 0.2,
                   child: Image.asset(
                     'images/wp_ss_20240831_0002.png', // 替换为你的图片路径
                     fit: BoxFit.fitWidth,

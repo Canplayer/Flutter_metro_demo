@@ -21,11 +21,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MetroApp(
       navigatorObservers: [],
-      //fontFamily: 'Segoe UI',
       
       title: 'Flutter Demo',
       color: Colors.red,
-      themeMode: MetroThemeMode.light,
+      //themeMode: MetroThemeMode.light,
+      useWVGAMode: true,
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -86,6 +86,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    //打印设备屏幕宽度
+    
+
+
     _keys.addAll(List.generate(apps.length, (index) => GlobalKey()));
 
     _controllers = List.generate(apps.length, (index) {
@@ -187,6 +191,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     //返回位置相比屏幕中心的偏移量
     //return screenCenter - position;
     return Offset(-position.dx, position.dy);
+  }
+
+//加载完毕时
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    //打印设备屏幕宽度
+    print(MediaQuery.of(context).size.width);
   }
 
   @override
