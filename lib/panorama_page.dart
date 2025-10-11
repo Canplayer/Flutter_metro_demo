@@ -1,5 +1,6 @@
 //import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'package:metro_ui/animations.dart';
 import 'package:metro_ui/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 
@@ -13,8 +14,14 @@ class PanoramaPage extends StatefulWidget {
 
 class _PanoramaPageState extends State<PanoramaPage>
     with TickerProviderStateMixin {
-  //牙面翻转的角度
-  double _rotation = 0;
+  // 常量定义
+  static const double _pi = 3.1415926535897932;
+  
+  // 将角度转换为弧度的辅助方法
+  static double _degreesToRadians(double degrees) => degrees * _pi / 180;
+  
+  // 页面翻转的角度（单位：度）
+  double _rotation = -180;
   //标题距离左边的距离
   double _titleLeft = 0;
   //主体内容距离左边的距离
@@ -22,7 +29,7 @@ class _PanoramaPageState extends State<PanoramaPage>
   //背景距离左边的距离
   double _backgroundLeft = 0;
   //翻转动画原点距离
-  double _pivot = 0;
+  final double _pivot = -250 * 0.8;
 
   //旋转动画控制器
   late AnimationController _rotationController;
@@ -40,23 +47,29 @@ class _PanoramaPageState extends State<PanoramaPage>
     //初始化旋转动画控制器
     _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 450),
+      duration: const Duration(milliseconds: 500),
     );
     //初始化平移动画控制器
     _translationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 850),
+      duration: const Duration(milliseconds: 1000),
     );
 
-    //旋转动画
+    // 旋转动画（使用度数表示）
     _rotationAnimation = Tween<double>(
-      //-90度到0
-      begin: -3.1415 * 0.5,
+      // 从-86.5° 到 0°（Y 轴旋转）
+      begin: -86.5,
       end: 0,
     ).animate(CurvedAnimation(
       parent: _rotationController,
-      curve: Curves.easeOut,
-    ));
+      curve: MetroCurves.panoramaRotateIn,
+    ))
+      ..addListener(() {
+        // 将动画值同步到 _rotation（度）
+        setState(() {
+          _rotation = _rotationAnimation.value;
+        });
+      });
 
     //平移动画
     _translationAnimation = Tween<double>(
@@ -64,26 +77,19 @@ class _PanoramaPageState extends State<PanoramaPage>
       end: 0,
     ).animate(CurvedAnimation(
       parent: _translationController,
-      curve: Curves.easeOutCirc,
+      curve: MetroCurves.panoramaTranslateIn,
     ))
       ..addListener(() {
         setState(() {
-          _backgroundLeft = _translationAnimation.value * 1200;
-          _titleLeft = _translationAnimation.value * 2400;
-          _contentLeft = _translationAnimation.value * 1800;
+          _backgroundLeft = _translationAnimation.value * 900 * 0.8;
+          _titleLeft = _translationAnimation.value * 1520 * 0.8;
+          _contentLeft = _translationAnimation.value * 1200 * 0.8;
           //_pivot的数值由320到0
-          _pivot = _translationAnimation.value * 320;
+          //_pivot = _translationAnimation.value * 320;
         });
       });
 
-    //开始旋转动画
-    _rotationController.forward();
-    //开始平移动画
-    _translationController.forward();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 替换当前路由的动画
-    });
   }
 
   @override
@@ -96,22 +102,22 @@ class _PanoramaPageState extends State<PanoramaPage>
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
-      // onWillPop: () async {
-      //   return true; //允许返回
-      // },
-      // onDidPop: () async {
-      //   //延长3秒
-      //   await Future.delayed(const Duration(milliseconds: 3000));
-      // },
+      onDidPush: () {
+            //开始旋转动画
+    _rotationController.forward();
+    //开始平移动画
+    //延迟2/60秒播放平移动画
+    _translationController.forward();
+      },
       onDidPopNext: () async {
       },
       
       
       body: Center(
         child: Transform(
-          transform: Matrix4.rotationY(_rotationAnimation.value),
-          //origin: const Offset(-37.5, 0),
-          origin: Offset(-_pivot, 0),
+          // 使用 _rotation（度）并转换为弧度
+          transform: Matrix4.rotationY(_degreesToRadians(_rotation)),
+          origin: Offset(_pivot, 0),
           child: LayoutBuilder(
             builder: (context, constraints) {
               double containerWidth;
@@ -131,23 +137,23 @@ class _PanoramaPageState extends State<PanoramaPage>
                 alignment: Alignment.topLeft,
                 child: Stack(
                   children: [
-                    // Positioned(
-                    //   left: _backgroundLeft,
-                    //   top: 0,
-                    //   width: containerWidth,
-                    //   height: parentHeight,
-                    //   child: ColorFiltered(
-                    //     colorFilter: ColorFilter.mode(
-                    //       Colors.black.withOpacity(0.2), // 透明度越高，图片越暗
-                    //       BlendMode.darken, // 使用暗化混合模式
-                    //     ),
-                    //     child: Image.asset(
-                    //       'assets/background.jpg',
-                    //       fit: BoxFit.cover,
-                    //       alignment: Alignment.topLeft,
-                    //     ),
-                    //   ),
-                    // ),
+                    Positioned(
+                      left: _backgroundLeft,
+                      top: 0,
+                      width: containerWidth,
+                      height: parentHeight,
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.1), // 透明度越高，图片越暗
+                          BlendMode.darken, // 使用暗化混合模式
+                        ),
+                        child: Image.asset(
+                          'images/IMG_0023.PNG',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topLeft,
+                        ),
+                      ),
+                    ),
                     Positioned(
                       left: _titleLeft,
                       top: -30,
@@ -156,7 +162,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                         style: TextStyle(
                           fontWeight: FontWeight.w200,
                           fontSize: 120,
-                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -172,7 +177,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 50,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -180,7 +184,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -188,7 +191,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -196,7 +198,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           const Text(
@@ -204,7 +205,6 @@ class _PanoramaPageState extends State<PanoramaPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w200,
                               fontSize: 32,
-                              color: Colors.white,
                             ),
                           ),
                           MetroButton(
