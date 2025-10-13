@@ -209,10 +209,9 @@ class _PanoramaPageState extends State<PanoramaPage>
                           ),
                           MetroButton(
                             onTap: () async {
-                              //开始旋转动画
-                              _rotationController.reverse();
-                              //开始平移动画
-                              await _translationController.reverse();
+                              //重新播放动画
+                              _rotationController.reset();
+                              _translationController.reset();
                               _rotationController.forward();
                               _translationController.forward();
                             },
