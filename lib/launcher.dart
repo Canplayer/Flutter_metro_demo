@@ -4,6 +4,7 @@ import 'package:metro_demo/panorama_page.dart';
 import 'package:metro_demo/phoneapplication_page.dart';
 import 'package:metro_demo/splashscreen_page.dart';
 import 'package:metro_demo/switch_demo_page.dart';
+import 'package:metro_ui/animations.dart';
 import 'package:metro_ui/button.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
@@ -34,12 +35,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
 
+
+  final double pushTime = 350; //非被点击的Tile总飞出时间
+  final double singleTileTime = 150;//单个Tile飞出时间
+
+
   List<App> apps = [
     App(name: 'Panorama', icon: Icons.map, page: const PanoramaPage()),
     App(name: 'About', icon: Icons.email, page: const PhoneApplicationPage()),
     App(name: 'Switch Demo', icon: Icons.toggle_on, page: const SwitchDemoPage()),
     App(name: 'Splash Screen', icon: Icons.star, page: const ArtisticTextPage()),
-    App(name: 'Camera', icon: Icons.camera, page: const PanoramaPage()),
+    App(name: 'Fake GSM Network', icon: Icons.phone, page: const PanoramaPage()),
     App(name: 'Calendar', icon: Icons.calendar_today, page: const PanoramaPage()),
     App(name: 'Clock', icon: Icons.access_time, page: const PanoramaPage()),
     App(name: 'Music', icon: Icons.music_note, page: const PanoramaPage()),
@@ -71,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     _controllers = List.generate(apps.length, (index) {
       return AnimationController(
-        duration: const Duration(milliseconds: 500),
+        duration: Duration(milliseconds: singleTileTime.toInt()),
         vsync: this,
       );
     });
@@ -82,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         end: 3.1416 / 2,
       ).animate(CurvedAnimation(
         parent: controller,
-        curve: Curves.easeInExpo,
+        curve: MetroCurves.normalPageRotateOut,
       ));
     }).toList();
 
@@ -96,14 +102,35 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   //sync方法
   Future<void> _startAnimations(GlobalKey tapKey) async {
     int thisIndex = 0;
+    int visibleTilesCount = 0;
 
+    // 首先计算可见元素的数量
     for (int i = _keys.length - 1; i >= 0; i--) {
       final RenderBox renderBox =
           _keys[i].currentContext!.findRenderObject() as RenderBox;
       final position = renderBox.localToGlobal(Offset.zero);
       final size = renderBox.size;
       final screenSize = MediaQuery.of(context).size;
-      // 过滤掉不在屏幕内的元素
+      
+      if (position.dx + size.width > 0 &&
+          position.dx < screenSize.width &&
+          position.dy + size.height > 0 &&
+          position.dy < screenSize.height) {
+        visibleTilesCount++;
+      }
+    }
+
+    // 计算每个元素之间的延迟时间
+    final int delayTime = ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
+
+    // 执行动画
+    for (int i = _keys.length - 1; i >= 0; i--) {
+      final RenderBox renderBox =
+          _keys[i].currentContext!.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final size = renderBox.size;
+      final screenSize = MediaQuery.of(context).size;
+      
       if (position.dx + size.width > 0 &&
           position.dx < screenSize.width &&
           position.dy + size.height > 0 &&
@@ -113,14 +140,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           continue;
         }
         _controllers[i].forward();
-        await Future.delayed(const Duration(milliseconds: 80));
+        await Future.delayed(Duration(milliseconds: delayTime));
       }
     }
 
     _controllers[thisIndex].forward();
 
     //结束await后执行动画重置
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 200));
       for (var controller in _controllers) {
         controller.reset();
       }
@@ -155,8 +182,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               child: Center(
                 //padding: const EdgeInsets.all(20),
                 child: Wrap(
-                  spacing: 9,
-                  runSpacing: 9,
+                  spacing: 9.6,
+                  runSpacing: 9.6,
                   clipBehavior: Clip.none,
                   children: apps.map((App app) {
                     int index = apps.indexOf(app);
@@ -194,19 +221,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                     Center(
                                       child: Icon(
                                         app.icon,
-                                        size: 100,
+                                        size: 80,
                                         color: Colors.white,
                                       ),
                                     ),
                                     //文字：左下角
                                     Positioned(
                                       left: 10,
-                                      bottom: 10,
+                                      bottom: 6,
                                       child: Text(
                                         app.name,
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 20,
+                                          fontSize: 16,
                                         ),
                                       ),
                                     ),

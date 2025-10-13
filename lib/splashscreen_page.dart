@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:metro_demo/animated_widgets.dart';
 import 'package:metro_demo/launcher.dart';
 import 'package:metro_ui/animations.dart';
-import 'package:metro_ui/button.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
 import 'package:metro_ui/page_scaffold.dart';
@@ -128,10 +127,10 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                   builder: (context, child) {
                     return LeftEdgeRotateAnimation(
                       //-90度
-                      rotation: 3.1416 / 180 * -75 * _text1Animation.value,
+                      rotation: 3.1416 / 180 * -45 * _text1Animation.value,
                       child: Transform(
                         transform: Matrix4.translationValues(
-                            240 * _text1Animation.value, 0, 0),
+                            100 * _text1Animation.value, 0, 0),
                         child: const Text(
                           'Flumetro',
                           style: TextStyle(
@@ -186,7 +185,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                         child: Container(
                           width: 73.6,
                           height: 73.6,
-                          color: Colors.red,
+                          color: const Color.fromARGB(255, 229, 20, 0),
                           child: Center(
                             child: SvgPicture.asset(
                               height: 50,

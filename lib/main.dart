@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:metro_demo/launcher.dart';
 import 'package:metro_demo/splashscreen_page.dart';
 import 'package:metro_ui/app.dart';
 
@@ -17,7 +16,8 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [],
       
       title: 'Flutter Demo',
-      color: Colors.red,
+      //229,20,0
+      metroColor: Color.fromARGB(255, 229, 20, 0),
       //themeMode: MetroThemeMode.light,
       useWVGAMode: true,
       home: ArtisticTextPage(),
