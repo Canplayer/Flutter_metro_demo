@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:metro_demo/animated_widgets.dart';
 import 'package:metro_demo/panorama_page.dart';
 import 'package:metro_demo/phoneapplication_page.dart';
+import 'package:metro_demo/splashscreen_page.dart';
 import 'package:metro_demo/switch_demo_page.dart';
 import 'package:metro_ui/app.dart';
 import 'package:metro_ui/button.dart';
@@ -54,14 +56,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
-  late List<double> _edgeOffset;
-
 
   List<App> apps = [
-    App(name: 'Panorama', icon: Icons.phone, page: const PanoramaPage()),
+    App(name: 'Panorama', icon: Icons.map, page: const PanoramaPage()),
     App(name: 'About', icon: Icons.email, page: const PhoneApplicationPage()),
     App(name: 'Switch Demo', icon: Icons.toggle_on, page: const SwitchDemoPage()),
-    App(name: 'Map', icon: Icons.map, page: const PanoramaPage()),
+    App(name: 'Splash Screen', icon: Icons.star, page: const ArtisticTextPage()),
     App(name: 'Camera', icon: Icons.camera, page: const PanoramaPage()),
     App(name: 'Calendar', icon: Icons.calendar_today, page: const PanoramaPage()),
     App(name: 'Clock', icon: Icons.access_time, page: const PanoramaPage()),
@@ -109,10 +109,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ));
     }).toList();
 
-    _edgeOffset = List.generate(apps.length, (index) {
-      return 0.0;
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         //_isAddPostFrame = true;
@@ -120,29 +116,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
   }
 
-  void _startAnim() {
-    for (int i = 0; i < _keys.length; i++) {
-      final RenderBox renderBox =
-          _keys[i].currentContext!.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-      final size = renderBox.size;
-      final screenSize = MediaQuery.of(context).size;
-      // 过滤掉不在屏幕内的元素
-      if (position.dx + size.width > 0 &&
-          position.dx < screenSize.width &&
-          position.dy + size.height > 0 &&
-          position.dy < screenSize.height) {
-        //print('子组件 $i 的绝对位置: $position');
-      }
-    }
-  }
-
   //sync方法
   Future<void> _startAnimations(GlobalKey tapKey) async {
-    _edgeOffset = List.generate(apps.length, (index) {
-      return _getAbsolutePosition(_keys[index]).dx;
-    });
-
     int thisIndex = 0;
 
     for (int i = _keys.length - 1; i >= 0; i--) {
@@ -167,38 +142,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     _controllers[thisIndex].forward();
 
-    // for (var controller in _controllers) {
-    //   await Future.delayed(const Duration(milliseconds: 80));
-    //   controller.forward();
-    // }
     //结束await后执行动画重置
     await Future.delayed(const Duration(milliseconds: 500));
       for (var controller in _controllers) {
         controller.reset();
       }
-  }
-
-  //获取相对于屏幕左中心的偏移量
-  Offset _getAbsolutePosition(GlobalKey key) {
-    //获取当前组件的渲染对象的位置
-    final RenderBox renderBox =
-        key.currentContext!.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(Offset.zero);
-    //获取屏幕大小
-    final screenSize = MediaQuery.of(context).size;
-    //获取屏幕左侧中心点
-    final screenCenter = Offset(0, screenSize.height / 2);
-    //返回位置相比屏幕中心的偏移量
-    //return screenCenter - position;
-    return Offset(-position.dx, position.dy);
-  }
-
-//加载完毕时
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    //打印设备屏幕宽度
-    print(MediaQuery.of(context).size.width);
   }
 
   @override
@@ -238,10 +186,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     return AnimatedBuilder(
                       animation: _animations[index],
                       builder: (context, child) {
-                        return Transform(
-                          origin: Offset(_edgeOffset[index] - 37.5, 0),
-                          transform: Matrix4.identity()
-                            ..rotateY(_animations[index].value),
+                        return LeftEdgeRotateAnimation(
+                          rotation: _animations[index].value,
                           child: SizedBox(
                             key: _keys[index],
                             width: 168,

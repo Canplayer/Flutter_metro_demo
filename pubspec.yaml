@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   metro_ui:
     path: ../Flutter-MetroUI
+  flutter_svg: ^2.2.1
 
 dev_dependencies:
   flutter_test:
@@ -94,3 +95,5 @@ flutter:
   assets:
     - images/wp_ss_20240831_0002.png
     - images/IMG_0023.PNG
+
+    - images/icons/flutter.svg
