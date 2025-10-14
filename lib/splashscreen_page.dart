@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:metro_demo/animated_widgets.dart';
+import 'package:metro_demo/widgets/metro_spinner.dart';
+import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/launcher.dart';
 import 'package:metro_ui/animations.dart';
 import 'package:metro_ui/metro_page_push.dart';
@@ -43,7 +44,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
     _logoAnimation = Tween<double>(begin: 1, end: 0.0).animate(
       CurvedAnimation(
         parent: _logoController,
-        curve: MetroCurves.normalPageTranslateIn,
+        curve: MetroCurves.normalPageRotateIn,
       ),
     );
 
@@ -54,7 +55,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
     _text1Animation = Tween<double>(begin: 1, end: 0.0).animate(
       CurvedAnimation(
         parent: _text1Controller,
-        curve: MetroCurves.normalPageTranslateIn,
+        curve: MetroCurves.normalPageRotateIn,
       ),
     );
 
@@ -65,7 +66,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
     _text2Animation = Tween<double>(begin: 1, end: 0.0).animate(
       CurvedAnimation(
         parent: _text2Controller,
-        curve: MetroCurves.normalPageTranslateIn,
+        curve: MetroCurves.normalPageRotateIn,
       ),
     );
 
@@ -127,7 +128,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                   builder: (context, child) {
                     return LeftEdgeRotateAnimation(
                       //-90度
-                      rotation: 3.1416 / 180 * -45 * _text1Animation.value,
+                      rotation: 3.1416 / 180 * -65 * _text1Animation.value,
                       child: Transform(
                         transform: Matrix4.translationValues(
                             100 * _text1Animation.value, 0, 0),
@@ -178,7 +179,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                   animation: _logoAnimation,
                   builder: (context, child) {
                     return LeftEdgeRotateAnimation(
-                      rotation: 3.1416 / 180 * -30 * _logoAnimation.value,
+                      rotation: 3.1416 / 180 * -20 * _logoAnimation.value,
                       child: Transform(
                         transform: Matrix4.translationValues(
                             60 * _logoAnimation.value, 0, 0),
@@ -203,6 +204,11 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                   },
                 ),
               ),
+            Positioned(
+              bottom: -50,
+              left: 0,
+              right: 0,
+              child: MetroSpinner(),),
             ],
           ),
         ),

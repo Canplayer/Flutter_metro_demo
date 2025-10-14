@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:metro_ui/switcher.dart';
-import 'package:metro_ui/button.dart';
+import 'package:metro_ui/widgets/switcher.dart';
+import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
 import 'package:metro_ui/page_scaffold.dart';

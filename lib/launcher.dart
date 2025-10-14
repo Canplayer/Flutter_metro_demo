@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:metro_demo/animated_widgets.dart';
-import 'package:metro_demo/panorama_page.dart';
-import 'package:metro_demo/phoneapplication_page.dart';
+import 'package:metro_demo/pages/spinner_demo_page.dart';
+import 'package:metro_ui/animated_widgets.dart';
+import 'package:metro_demo/pages/panorama_page.dart';
+import 'package:metro_demo/pages/phoneapplication_page.dart';
 import 'package:metro_demo/splashscreen_page.dart';
-import 'package:metro_demo/switch_demo_page.dart';
+import 'package:metro_demo/pages/switch_demo_page.dart';
 import 'package:metro_ui/animations.dart';
-import 'package:metro_ui/button.dart';
+import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
 import 'package:metro_ui/page_scaffold.dart';
-import 'package:metro_ui/tile.dart';
+import 'package:metro_ui/widgets/tile.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -36,8 +37,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late List<Animation<double>> _animations;
 
 
-  final double pushTime = 350; //非被点击的Tile总飞出时间
-  final double singleTileTime = 150;//单个Tile飞出时间
+  final int pushTime = 350; //非被点击的Tile总飞出时间
+  final int singleTileTime = 150;//单个Tile飞出时间
 
 
   List<App> apps = [
@@ -46,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     App(name: 'Switch Demo', icon: Icons.toggle_on, page: const SwitchDemoPage()),
     App(name: 'Splash Screen', icon: Icons.star, page: const ArtisticTextPage()),
     App(name: 'Fake GSM Network', icon: Icons.phone, page: const PanoramaPage()),
-    App(name: 'Calendar', icon: Icons.calendar_today, page: const PanoramaPage()),
+    App(name: 'SpinnerDemoPage', icon: Icons.calendar_today, page: const SpinnerDemoPage()),
     App(name: 'Clock', icon: Icons.access_time, page: const PanoramaPage()),
     App(name: 'Music', icon: Icons.music_note, page: const PanoramaPage()),
     App(name: 'People', icon: Icons.people, page: const PanoramaPage()),
@@ -144,10 +145,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
     }
 
+    await Future.delayed(Duration(milliseconds: delayTime*2));
     _controllers[thisIndex].forward();
 
     //结束await后执行动画重置
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(Duration(milliseconds: singleTileTime));
       for (var controller in _controllers) {
         controller.reset();
       }
