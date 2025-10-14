@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metro_demo/widgets/metro_spinner.dart';
+import 'package:metro_ui/widgets/metro_spinner.dart';
 import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 

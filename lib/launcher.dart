@@ -35,19 +35,30 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
-
+  late List<bool> _tileVisibility; // 控制每个 tile 的可见性
 
   final int pushTime = 350; //非被点击的Tile总飞出时间
-  final int singleTileTime = 150;//单个Tile飞出时间
-
+  final int singleTileTime = 150; //单个Tile飞出时间
 
   List<App> apps = [
     App(name: 'Panorama', icon: Icons.map, page: const PanoramaPage()),
     App(name: 'About', icon: Icons.email, page: const PhoneApplicationPage()),
-    App(name: 'Switch Demo', icon: Icons.toggle_on, page: const SwitchDemoPage()),
-    App(name: 'Splash Screen', icon: Icons.star, page: const ArtisticTextPage()),
-    App(name: 'Fake GSM Network', icon: Icons.phone, page: const PanoramaPage()),
-    App(name: 'SpinnerDemoPage', icon: Icons.calendar_today, page: const SpinnerDemoPage()),
+    App(
+        name: 'Switch Demo',
+        icon: Icons.toggle_on,
+        page: const SwitchDemoPage()),
+    App(
+        name: 'Splash Screen',
+        icon: Icons.star,
+        page: const ArtisticTextPage()),
+    App(
+        name: 'Fake GSM Network',
+        icon: Icons.phone,
+        page: const PanoramaPage()),
+    App(
+        name: 'SpinnerDemoPage',
+        icon: Icons.calendar_today,
+        page: const SpinnerDemoPage()),
     App(name: 'Clock', icon: Icons.access_time, page: const PanoramaPage()),
     App(name: 'Music', icon: Icons.music_note, page: const PanoramaPage()),
     App(name: 'People', icon: Icons.people, page: const PanoramaPage()),
@@ -55,13 +66,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     App(name: 'Store', icon: Icons.store, page: const PanoramaPage()),
     App(name: 'News', icon: Icons.article, page: const PanoramaPage()),
     App(name: 'Photos', icon: Icons.photo, page: const PanoramaPage()),
-    App(name: 'Videos', icon: Icons.video_collection, page: const PanoramaPage()),
+    App(
+        name: 'Videos',
+        icon: Icons.video_collection,
+        page: const PanoramaPage()),
     App(name: 'Settings', icon: Icons.settings, page: const PanoramaPage()),
-    App(name: 'Wallet', icon: Icons.account_balance_wallet, page: const PanoramaPage()),
+    App(
+        name: 'Wallet',
+        icon: Icons.account_balance_wallet,
+        page: const PanoramaPage()),
     App(name: 'Calculator', icon: Icons.calculate, page: const PanoramaPage()),
     App(name: 'Alarms', icon: Icons.alarm, page: const PanoramaPage()),
     App(name: 'Notes', icon: Icons.note, page: const PanoramaPage()),
-    App(name: 'Reminders', icon: Icons.notifications, page: const PanoramaPage()),
+    App(
+        name: 'Reminders',
+        icon: Icons.notifications,
+        page: const PanoramaPage()),
     App(name: 'Tasks', icon: Icons.task, page: const PanoramaPage()),
     App(name: 'Sports', icon: Icons.sports_soccer, page: const PanoramaPage()),
     App(name: 'Health', icon: Icons.favorite, page: const PanoramaPage()),
@@ -71,14 +91,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     //打印设备屏幕宽度
-    
-
 
     _keys.addAll(List.generate(apps.length, (index) => GlobalKey()));
 
+    _tileVisibility =
+        List.generate(apps.length, (index) => false); // 初始化所有 tile 为可见
+
     _controllers = List.generate(apps.length, (index) {
       return AnimationController(
-        duration: Duration(milliseconds: singleTileTime.toInt()),
         vsync: this,
       );
     });
@@ -86,56 +106,101 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _animations = _controllers.map((controller) {
       return Tween<double>(
         begin: 0.0,
-        end: 3.1416 / 2,
+        end: 0.0,
       ).animate(CurvedAnimation(
         parent: controller,
-        curve: MetroCurves.normalPageRotateOut,
+        curve: Curves.linear,
       ));
     }).toList();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        //_isAddPostFrame = true;
-      });
-    });
+    //下一帧
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _startPushAnimations();
+    // });
+
+    //_startPushAnimations();
   }
 
-  //sync方法
-  Future<void> _startAnimations(GlobalKey tapKey) async {
-    int thisIndex = 0;
-    int visibleTilesCount = 0;
+  /// 判断组件是否在屏幕可见范围内
+  ///
+  /// [key] 要检查的 GlobalKey
+  /// 返回 true 表示组件可见，false 表示不可见
+  bool _isWidgetVisible(GlobalKey key) {
+    //return true;
+    final RenderBox? renderBox =
+        key.currentContext?.findRenderObject() as RenderBox?;
 
-    // 首先计算可见元素的数量
-    for (int i = _keys.length - 1; i >= 0; i--) {
-      final RenderBox renderBox =
-          _keys[i].currentContext!.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-      final size = renderBox.size;
-      final screenSize = MediaQuery.of(context).size;
-      
-      if (position.dx + size.width > 0 &&
-          position.dx < screenSize.width &&
-          position.dy + size.height > 0 &&
-          position.dy < screenSize.height) {
-        visibleTilesCount++;
+    if (renderBox == null) return false;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    final screenSize = MediaQuery.of(context).size;
+
+    return position.dx + size.width > 0 &&
+        position.dx < screenSize.width &&
+        position.dy + size.height > 0 &&
+        position.dy < screenSize.height;
+  }
+
+  Future<void> _startPushNextAnimations(GlobalKey tapKey) async {
+    // 找出所有可见的元素索引
+    final List<int> visibleIndices = [];
+    for (int i = 0; i < _keys.length; i++) {
+      if (_isWidgetVisible(_keys[i])) {
+        visibleIndices.add(i);
       }
     }
 
-    // 计算每个元素之间的延迟时间
-    final int delayTime = ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
+    setState(() {
+      _controllers = List.generate(apps.length, (index) {
+        // 只为可见元素创建真正的控制器
+        if (visibleIndices.contains(index)) {
+          return AnimationController(
+            duration: Duration(milliseconds: singleTileTime),
+            vsync: this,
+          );
+        } else {
+          // 不可见元素创建空控制器
+          return AnimationController(vsync: this);
+        }
+      });
 
-    // 执行动画
+      _animations = _controllers.asMap().entries.map((entry) {
+        int index = entry.key;
+        AnimationController controller = entry.value;
+
+        // 只为可见元素创建真正的动画
+        if (visibleIndices.contains(index)) {
+          return Tween<double>(
+            begin: 0.0,
+            end: 3.1416 / 2,
+          ).animate(CurvedAnimation(
+            parent: controller,
+            curve: MetroCurves.normalPageRotateOut,
+          ));
+        } else {
+          // 不可见元素创建空动画
+          return Tween<double>(
+            begin: 0.0,
+            end: 0.0,
+          ).animate(CurvedAnimation(
+            parent: controller,
+            curve: Curves.linear,
+          ));
+        }
+      }).toList();
+    });
+
+    int thisIndex = 0;
+    final int visibleTilesCount = visibleIndices.length;
+
+    // 计算每个元素之间的延迟时间
+    final int delayTime =
+        ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
+
+    // 执行动画（只对可见元素）
     for (int i = _keys.length - 1; i >= 0; i--) {
-      final RenderBox renderBox =
-          _keys[i].currentContext!.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-      final size = renderBox.size;
-      final screenSize = MediaQuery.of(context).size;
-      
-      if (position.dx + size.width > 0 &&
-          position.dx < screenSize.width &&
-          position.dy + size.height > 0 &&
-          position.dy < screenSize.height) {
+      if (visibleIndices.contains(i)) {
         if (_keys[i] == tapKey) {
           thisIndex = i;
           continue;
@@ -145,15 +210,170 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
     }
 
-    await Future.delayed(Duration(milliseconds: delayTime*2));
+    await Future.delayed(Duration(milliseconds: delayTime * 2));
     _controllers[thisIndex].forward();
 
     //结束await后执行动画重置
     await Future.delayed(Duration(milliseconds: singleTileTime));
-      for (var controller in _controllers) {
-        controller.reset();
-      }
+    for (var controller in _controllers) {
+      controller.reset();
+      //透明度设置为0
+      setState(() {
+       _tileVisibility = List.generate(apps.length, (index) => false);
+      });
+    }
   }
+
+  Future<void> _startPushAnimations() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 找出所有可见的元素索引
+      final List<int> visibleIndices = [];
+      for (int i = 0; i < _keys.length; i++) {
+        if (_isWidgetVisible(_keys[i])) {
+          visibleIndices.add(i);
+        } else {
+          _tileVisibility[i] = true;
+        }
+      }
+
+      setState(() {
+        for (int i in visibleIndices) {
+          _tileVisibility[i] = false;
+        }
+        _controllers = List.generate(apps.length, (index) {
+          // 只为可见元素创建真正的控制器
+          if (visibleIndices.contains(index)) {
+            return AnimationController(
+              duration: Duration(milliseconds: singleTileTime*3),
+              vsync: this,
+            );
+          } else {
+            // 不可见元素创建空控制器
+            return AnimationController(vsync: this);
+          }
+        });
+
+        _animations = _controllers.asMap().entries.map((entry) {
+          int index = entry.key;
+          AnimationController controller = entry.value;
+
+          // 只为可见元素创建真正的动画
+          if (visibleIndices.contains(index)) {
+            return Tween<double>(
+              begin: -3.1416 / 180 * 65,
+              end: 0,
+            ).animate(CurvedAnimation(
+              parent: controller,
+              curve: MetroCurves.normalPageRotateIn,
+            ));
+          } else {
+            // 不可见元素创建空动画
+            return Tween<double>(
+              begin: 0.0,
+              end: 0.0,
+            ).animate(CurvedAnimation(
+              parent: controller,
+              curve: MetroCurves.normalPageRotateIn,
+            ));
+          }
+        }).toList();
+      });
+
+      final int visibleTilesCount = visibleIndices.length;
+
+      // 计算每个元素之间的延迟时间
+      final int delayTime =
+          ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
+
+      // 执行动画（只对可见元素）
+      for (int i = _keys.length - 1; i >= 0; i--) {
+        if (visibleIndices.contains(i)) {
+          setState(() {
+            _tileVisibility[i] = true; // 动画开始前直接显示
+          });
+          _controllers[i].forward();
+          await Future.delayed(Duration(milliseconds: delayTime));
+        }
+      }
+    });
+  }
+
+    Future<void> _startPopNextAnimations() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 找出所有可见的元素索引
+      final List<int> visibleIndices = [];
+      for (int i = 0; i < _keys.length; i++) {
+        if (_isWidgetVisible(_keys[i])) {
+          visibleIndices.add(i);
+        } else {
+          _tileVisibility[i] = true;
+        }
+      }
+
+      setState(() {
+        for (int i in visibleIndices) {
+          _tileVisibility[i] = false;
+        }
+        _controllers = List.generate(apps.length, (index) {
+          // 只为可见元素创建真正的控制器
+          if (visibleIndices.contains(index)) {
+            return AnimationController(
+              duration: Duration(milliseconds: singleTileTime*3),
+              vsync: this,
+            );
+          } else {
+            // 不可见元素创建空控制器
+            return AnimationController(vsync: this);
+          }
+        });
+
+        _animations = _controllers.asMap().entries.map((entry) {
+          int index = entry.key;
+          AnimationController controller = entry.value;
+
+          // 只为可见元素创建真正的动画
+          if (visibleIndices.contains(index)) {
+            return Tween<double>(
+              begin: 3.1416 / 180 * 40,
+              end: 0,
+            ).animate(CurvedAnimation(
+              parent: controller,
+              curve: MetroCurves.normalPageRotateIn,
+            ));
+          } else {
+            // 不可见元素创建空动画
+            return Tween<double>(
+              begin: 0.0,
+              end: 0.0,
+            ).animate(CurvedAnimation(
+              parent: controller,
+              curve: MetroCurves.normalPageRotateIn,
+            ));
+          }
+        }).toList();
+      });
+
+      final int visibleTilesCount = visibleIndices.length;
+
+      // 计算每个元素之间的延迟时间
+      final int delayTime =
+          ((pushTime - singleTileTime) / visibleTilesCount).round();
+
+      // 执行动画（只对可见元素）
+      for (int i = _keys.length - 1; i >= 0; i--) {
+        if (visibleIndices.contains(i)) {
+          setState(() {
+            _tileVisibility[i] = true; // 动画开始前直接显示
+          });
+          _controllers[i].forward();
+          await Future.delayed(Duration(milliseconds: delayTime));
+        }
+      }
+    });
+  }
+
+
+  //Future<void> _start
 
   @override
   Widget build(BuildContext context) {
@@ -161,10 +381,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       onDidPushNext: <T>(T data) async {
         //如果arguments存在arguments是int类型
         if (data is int) {
-          await _startAnimations(_keys[data]);
+          await _startPushNextAnimations(_keys[data]);
         }
       },
-      
+      onDidPush: () async {
+        await _startPushAnimations();
+      },
+      onDidPopNext: () async {
+        //print("object");
+        await _startPopNextAnimations();
+      },
+
+      onDidPop: () async {
+        print("object2");
+        //await _startPushAnimations();
+      },
+
+
       body: Column(
         children: [
           const SizedBox(height: 80),
@@ -172,7 +405,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: const Text('Welcome to my demo'),
             onTap: () {
               //打印屏幕尺寸
-              debugPrint(MediaQuery.of(context).size.toString());
+              print(MediaQuery.of(context).size.toString());
+              _startPushAnimations();
             },
           ),
 
@@ -192,54 +426,57 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     return AnimatedBuilder(
                       animation: _animations[index],
                       builder: (context, child) {
-                        return LeftEdgeRotateAnimation(
-                          rotation: _animations[index].value,
-                          child: SizedBox(
-                            key: _keys[index],
-                            width: 168,
-                            height: 168,
-                            child: Tile(
-                              allowBack: true,
-                              onTap: () {
-                                metroPagePush(
-                                  context,
-                                  MetroPageRoute(
-                                    builder: (context) {
-                                      return app.page;
-                                    },
-                                  ),
-                                  //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
-                                  //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
-                                  dataToPass: index,
-                                );
-                              },
-                              child: Container(
-                                color: Theme.of(context).colorScheme.primary,
-                                child:
-                                    //分层布局
-                                    Stack(
-                                  children: [
-                                    //图标：居中
-                                    Center(
-                                      child: Icon(
-                                        app.icon,
-                                        size: 80,
-                                        color: Colors.white,
-                                      ),
+                        return Opacity(
+                          opacity: _tileVisibility[index] ? 1.0 : 0.0, // 控制可见性
+                          child: LeftEdgeRotateAnimation(
+                            rotation: _animations[index].value,
+                            child: SizedBox(
+                              key: _keys[index],
+                              width: 168,
+                              height: 168,
+                              child: Tile(
+                                allowBack: true,
+                                onTap: () {
+                                  metroPagePush(
+                                    context,
+                                    MetroPageRoute(
+                                      builder: (context) {
+                                        return app.page;
+                                      },
                                     ),
-                                    //文字：左下角
-                                    Positioned(
-                                      left: 10,
-                                      bottom: 6,
-                                      child: Text(
-                                        app.name,
-                                        style: const TextStyle(
+                                    //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
+                                    //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
+                                    dataToPass: index,
+                                  );
+                                },
+                                child: Container(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  child:
+                                      //分层布局
+                                      Stack(
+                                    children: [
+                                      //图标：居中
+                                      Center(
+                                        child: Icon(
+                                          app.icon,
+                                          size: 80,
                                           color: Colors.white,
-                                          fontSize: 16,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      //文字：左下角
+                                      Positioned(
+                                        left: 10,
+                                        bottom: 6,
+                                        child: Text(
+                                          app.name,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -265,4 +502,3 @@ class App {
   Widget page;
   App({required this.name, required this.icon, required this.page});
 }
-

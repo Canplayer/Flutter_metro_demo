@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:metro_demo/widgets/metro_spinner.dart';
+import 'package:metro_ui/widgets/metro_spinner.dart';
 import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/launcher.dart';
 import 'package:metro_ui/animations.dart';
@@ -110,10 +110,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
     return MetroPageScaffold(
       key: _scaffoldKey,
       body: Center(
-        child:
-            //3DY轴旋转动画
-
-            SizedBox(
+        child: SizedBox(
           width: 330,
           height: 128,
           // color: Colors.grey.shade300,
@@ -204,11 +201,12 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
                   },
                 ),
               ),
-            Positioned(
-              bottom: -50,
-              left: 0,
-              right: 0,
-              child: MetroSpinner(),),
+              const Positioned(
+                bottom: -50,
+                left: 0,
+                right: 0,
+                child: MetroSpinner(),
+              ),
             ],
           ),
         ),
