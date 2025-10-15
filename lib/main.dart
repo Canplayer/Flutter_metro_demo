@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metro_demo/splashscreen_page.dart';
 import 'package:metro_ui/app.dart';
+import 'package:metro_demo/custom_scroll_behavior.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +21,8 @@ class MyApp extends StatelessWidget {
       metroColor: Color.fromARGB(255, 229, 20, 0),
       //themeMode: MetroThemeMode.light,
       useWVGAMode: true,
+      // 应用自定义滚动行为
+      scrollBehavior: CustomMetroScrollBehavior(),
       home: ArtisticTextPage(),
     );
   }
