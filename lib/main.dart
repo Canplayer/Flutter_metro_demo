@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       //themeMode: MetroThemeMode.light,
       useWVGAMode: true,
       // 应用自定义滚动行为
-      scrollBehavior: MetroScrollBehavior(),
+      //scrollBehavior: MetroScrollBehavior(),
       home: ArtisticTextPage(),
     );
   }

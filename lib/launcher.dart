@@ -335,7 +335,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           // 只为可见元素创建真正的动画
           if (visibleIndices.contains(index)) {
             return Tween<double>(
-              begin: 3.1416 / 180 * 40,
+              begin: 3.1416 / 180 * 50,
               end: 0,
             ).animate(CurvedAnimation(
               parent: controller,
