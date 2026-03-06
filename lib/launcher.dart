@@ -43,7 +43,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   List<App> apps = [
     App(name: 'Panorama', icon: Icons.map, page: const PanoramaPage()),
-    App(name: 'PhoneApplication', icon: Icons.android, page: const PhoneApplicationPage()),
+    App(
+        name: 'PhoneApplication',
+        icon: Icons.android,
+        page: const PhoneApplicationPage()),
     App(
         name: 'Switch Demo',
         icon: Icons.toggle_on,
@@ -220,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       controller.reset();
       //透明度设置为0
       setState(() {
-       _tileVisibility = List.generate(apps.length, (index) => false);
+        _tileVisibility = List.generate(apps.length, (index) => false);
       });
     }
   }
@@ -245,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           // 只为可见元素创建真正的控制器
           if (visibleIndices.contains(index)) {
             return AnimationController(
-              duration: Duration(milliseconds: singleTileTime*3),
+              duration: Duration(milliseconds: singleTileTime * 3),
               vsync: this,
             );
           } else {
@@ -299,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
   }
 
-    Future<void> _startPopNextAnimations() async {
+  Future<void> _startPopNextAnimations() async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // 找出所有可见的元素索引
       final List<int> visibleIndices = [];
@@ -319,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           // 只为可见元素创建真正的控制器
           if (visibleIndices.contains(index)) {
             return AnimationController(
-              duration: Duration(milliseconds: singleTileTime*3),
+              duration: Duration(milliseconds: singleTileTime * 3),
               vsync: this,
             );
           } else {
@@ -373,7 +376,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
   }
 
-
   //Future<void> _start
 
   @override
@@ -392,13 +394,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         //print("object");
         await _startPopNextAnimations();
       },
-
       onDidPop: () async {
         print("object2");
         //await _startPushAnimations();
       },
-
-
       body: Column(
         children: [
           const SizedBox(height: 80),
