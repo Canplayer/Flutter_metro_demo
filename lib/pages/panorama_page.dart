@@ -135,6 +135,8 @@ class _PanoramaPageState extends State<PanoramaPage>
 
   final ValueNotifier<ParallaxData> _parallaxNotifier =
       ValueNotifier<ParallaxData>(const ParallaxData(0.0, 0.0));
+  final ValueNotifier<Map<int, double>> _itemDxNotifier =
+      ValueNotifier<Map<int, double>>({});
   // 用于将 _translationAnimation 的值透传到各子层，以便分别施加不同的偏移量
   final ValueNotifier<double> _translationNotifier = ValueNotifier<double>(1.0);
 
@@ -144,6 +146,7 @@ class _PanoramaPageState extends State<PanoramaPage>
   double _releaseS = 0.0;
   double _releaseT = 0.0;
   double _releaseB = 0.0;
+  Map<int, double> _releaseItemDx = {};
   // 标题容器宽度（与渲染时 SizedBox 的 width 一致）
   static const double _titleContainerWidth = 500.0;
   double _titleSpacing = 1500.0;
@@ -188,7 +191,7 @@ class _PanoramaPageState extends State<PanoramaPage>
         ),
       ),
       MetroPanoramaItem(
-        title: "long data view",
+        title: "long view",
         width: 800,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -266,6 +269,7 @@ class _PanoramaPageState extends State<PanoramaPage>
     _translationController.dispose();
     _scrollController.dispose();
     _parallaxNotifier.dispose();
+    _itemDxNotifier.dispose();
     _translationNotifier.dispose();
     super.dispose();
   }
@@ -311,6 +315,23 @@ class _PanoramaPageState extends State<PanoramaPage>
       B_loc = 0;
     }
     return B_loc - cycle * _bgPatternWidth;
+  }
+
+  // 计算长内容容器中小标题的理想停靠位置
+  double _getIdealItemDx(int realIndex, double S) {
+    if (_items[realIndex].width <= 300) return 0.0;
+    double start = 0;
+    for (int i = 0; i < realIndex; i++) start += _items[i].width;
+    double cycleS = _cycleLength > 0 ? S % _cycleLength : 0;
+    double diff = cycleS - start;
+    if (_cycleLength > 0) {
+      if (diff < -_cycleLength / 2) diff += _cycleLength;
+      if (diff > _cycleLength / 2) diff -= _cycleLength;
+    }
+    double maxDx = _items[realIndex].width - 300;
+    if (diff < 0) return 0.0;
+    if (diff > maxDx) return maxDx;
+    return diff;
   }
 
   @override
@@ -453,11 +474,7 @@ class _PanoramaPageState extends State<PanoramaPage>
         ),
 
         // 2. 避免列表本身的重复构建，采用中心切分的双向无限ScrollView（入场偏移 1200 * 0.8）
-        Positioned(
-          top: 140,
-          left: 0,
-          bottom: 0,
-          right: 0,
+        Positioned.fill(
           child: ValueListenableBuilder<double>(
             valueListenable: _translationNotifier,
             builder: (context, tv, child) => Transform.translate(
@@ -486,12 +503,25 @@ class _PanoramaPageState extends State<PanoramaPage>
                   _getIdealT(S, parentWidth),
                   _getIdealB(S, parentWidth),
                 );
+                Map<int, double> newMap = {};
+                for (int i = 0; i < _items.length; i++) {
+                  newMap[i] = _getIdealItemDx(i, S);
+                }
+                _itemDxNotifier.value = newMap;
               } else if (notification is ScrollUpdateNotification) {
                 double dx = notification.scrollDelta ?? 0.0;
                 if (_isDragging && !_isBallistic) {
                   double newT = _parallaxNotifier.value.tOffset - dx / 4.0;
                   double newB = _parallaxNotifier.value.bOffset - dx / 3.0;
                   _parallaxNotifier.value = ParallaxData(newT, newB);
+
+                  Map<int, double> newMap = Map.from(_itemDxNotifier.value);
+                  for (int i = 0; i < _items.length; i++) {
+                    if (_items[i].width > 300) {
+                      newMap[i] = (newMap[i] ?? _getIdealItemDx(i, notification.metrics.pixels)) + dx * 0.5;
+                    }
+                  }
+                  _itemDxNotifier.value = newMap;
                 } else if (_isBallistic) {
                   double S = notification.metrics.pixels;
                   double distance = _targetS - _releaseS;
@@ -504,6 +534,18 @@ class _PanoramaPageState extends State<PanoramaPage>
                     _releaseT + p * (idealT - _releaseT),
                     _releaseB + p * (idealB - _releaseB),
                   );
+
+                  Map<int, double> newMap = {};
+                  for (int i = 0; i < _items.length; i++) {
+                    if (_items[i].width > 300) {
+                      double rDx = _releaseItemDx[i] ?? _getIdealItemDx(i, _releaseS);
+                      double iDx = _getIdealItemDx(i, _targetS);
+                      newMap[i] = rDx + p * (iDx - rDx);
+                    } else {
+                      newMap[i] = 0.0;
+                    }
+                  }
+                  _itemDxNotifier.value = newMap;
                 }
               }
               return false; // 允许冒泡不阻断
@@ -522,6 +564,7 @@ class _PanoramaPageState extends State<PanoramaPage>
                   _releaseS = _scrollController.position.pixels;
                   _releaseT = _parallaxNotifier.value.tOffset;
                   _releaseB = _parallaxNotifier.value.bOffset;
+                  _releaseItemDx = Map.from(_itemDxNotifier.value);
                   _isBallistic = true;
                 },
               ),
@@ -534,7 +577,7 @@ class _PanoramaPageState extends State<PanoramaPage>
                         int realIndex =
                             (_items.length - 1 - (index % _items.length)) %
                                 _items.length;
-                        return _buildItemWidget(_items[realIndex]);
+                        return _buildItemWidget(_items[realIndex], realIndex);
                       },
                     ),
                   ),
@@ -545,7 +588,7 @@ class _PanoramaPageState extends State<PanoramaPage>
                     (context, index) {
                       int realIndex =
                           isInfinite ? index % _items.length : index;
-                      return _buildItemWidget(_items[realIndex]);
+                      return _buildItemWidget(_items[realIndex], realIndex);
                     },
                     childCount: isInfinite ? null : _items.length,
                   ),
@@ -561,17 +604,19 @@ class _PanoramaPageState extends State<PanoramaPage>
         //    正常静止状态超出屏幕范围不可见（Stack clipBehavior: Clip.none 保证不裁剪）
         if (_items.isNotEmpty)
           Positioned(
-            top: 140,
+            top: 0,
             left: 0,
             width: _items.last.width,
             bottom: 0,
-            child: ValueListenableBuilder<double>(
-              valueListenable: _translationNotifier,
-              builder: (context, tv, child) => Transform.translate(
-                offset: Offset(tv * 1200 * 0.8 - _items.last.width, 0),
-                child: child!,
+            child: IgnorePointer(
+              child: ValueListenableBuilder<double>(
+                valueListenable: _translationNotifier,
+                builder: (context, tv, child) => Transform.translate(
+                  offset: Offset(tv * 1200 * 0.8 - _items.last.width, 0),
+                  child: child!,
+                ),
+                child: _buildItemWidget(_items.last, _items.length - 1),
               ),
-              child: _buildItemWidget(_items.last),
             ),
           ),
 
@@ -605,19 +650,32 @@ class _PanoramaPageState extends State<PanoramaPage>
     );
   }
 
-  Widget _buildItemWidget(MetroPanoramaItem item) {
+  Widget _buildItemWidget(MetroPanoramaItem item, int realIndex) {
     return Container(
       color: Colors.transparent,
       width: item.width,
-      padding: const EdgeInsets.only(left: 20),
+      padding: const EdgeInsets.only(left: 20, top: 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w200,
-              fontSize: 50,
+          ValueListenableBuilder<Map<int, double>>(
+            valueListenable: _itemDxNotifier,
+            builder: (context, dxMap, child) {
+              double dx = 0.0;
+              if (item.width > 300) {
+                dx = dxMap[realIndex] ?? 0.0;
+              }
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: child,
+              );
+            },
+            child: Text(
+              item.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w200,
+                fontSize: 50,
+              ),
             ),
           ),
           const SizedBox(height: 10),
