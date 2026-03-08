@@ -3,7 +3,6 @@ import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/panorama.dart';
 
-
 class PanoramaPage extends StatefulWidget {
   const PanoramaPage({super.key});
 
@@ -20,8 +19,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
 
     _items.addAll([
       MetroPanoramaItem(
-        title: "camera roll",
-        width: 350,
+        title: "favorites",
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,8 +32,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
         ),
       ),
       MetroPanoramaItem(
-        title: "albums",
-        width: 350,
+        title: "what's new",
         child: Wrap(
           spacing: 15,
           runSpacing: 15,
@@ -49,11 +46,8 @@ class _PanoramaPageState extends State<PanoramaPage> {
       ),
       MetroPanoramaItem(
         title: "long view",
-        width: 700,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(), // 让父级ListView接管滑动体验
-          child: Row(
+        width: 800,
+        child: Row(
             children: List.generate(
                 5,
                 (i) => Container(
@@ -66,7 +60,6 @@ class _PanoramaPageState extends State<PanoramaPage> {
                               style: const TextStyle(fontSize: 16))),
                     )),
           ),
-        ),
       ),
       MetroPanoramaItem(
         title: "people",
@@ -90,15 +83,35 @@ class _PanoramaPageState extends State<PanoramaPage> {
       // },
       body: Stack(
         children: [
+          //背景贴图
+          // Image.asset(
+          //   'images/wp_ss_20260308_0001.png',
+          //   fit: BoxFit.fitWidth,
+          //   width: double.infinity,
+          //   height: double.infinity,
+          // ),
+            //           ColorFiltered(
+            //   colorFilter: ColorFilter.mode(
+            //     Colors.black.withOpacity(0.6),
+            //     BlendMode.darken,
+            //   ),
+            //   child: Image.asset(
+            //     'images/wp_ss_20260308_0001.png',
+            //     fit: BoxFit.cover,
+            //     alignment: Alignment.topLeft,
+            //   ),
+            // ),
           MetroPanorama(
             title: const Text('photos'),
-            background: ColorFiltered(
+            background: 
+
+            ColorFiltered(
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.1),
+                Colors.black.withOpacity(0.4),
                 BlendMode.darken,
               ),
               child: Image.asset(
-                'images/IMG_0023.PNG',
+                'images/sample_photo_00.jpg',
                 fit: BoxFit.cover,
                 alignment: Alignment.topLeft,
               ),
@@ -123,4 +136,3 @@ class _PanoramaPageState extends State<PanoramaPage> {
     );
   }
 }
-

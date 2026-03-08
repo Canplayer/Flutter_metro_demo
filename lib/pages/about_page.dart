@@ -33,31 +33,102 @@ class _AboutPageState extends State<AboutPage> {
             children: <Widget>[
               const SizedBox(height: 20),
               Expanded(
-                  child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 19.0),
-                child: 
-                SingleChildScrollView(
-                  child: 
-                Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'I’m truly proud to announce the release of this project.\nThanks to Flutter’s efficient and delightful development experience, this classic Windows Phone design language has been brought back to life.\nI hope you enjoy this project and consider using it in your own applications.\nAs an amateur developer, I know my code may still have plenty of room for improvement.\nIf you like this project, I warmly welcome your contributions to make it even better.\n\nAnd hey — if you’d like to show your support, I wouldn’t say no to a cup of coffee. XD\n\n— Canplayer, Developer',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 72.5),
-                      MetroButton(
-                        child: const Text('back to home'),
-                        onTap: () {
-                          // 这里使用的 context 是 PhoneApplicationPage 的 context
-                          // 它没有 MetroPageScaffold 作为祖先
-                          Navigator.maybePop(scaffoldContext);
-                        },
-                      ),
-                    ]),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 19.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'I’m truly proud to announce the release of this project.\nThanks to Flutter’s efficient and delightful development experience, this classic Windows Phone design language has been brought back to life.\nI hope you enjoy this project and consider using it in your own applications.\nAs an amateur developer, I know my code may still have plenty of room for improvement.\nIf you like this project, I warmly welcome your contributions to make it even better.\n\nAnd hey — if you’d like to show your support, I wouldn’t say no to a cup of coffee. XD\n\n— Canplayer, Developer',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          const SizedBox(height: 72.5),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontVariations: [
+                                      FontVariation('wght', 100),
+                                    ],
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w200,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const Text(
+                            'text demo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 24,
+                            ),
+                          ),
+                          MetroButton(
+                            child: const Text('back to home'),
+                            onTap: () {
+                              // 这里使用的 context 是 PhoneApplicationPage 的 context
+                              // 它没有 MetroPageScaffold 作为祖先
+                              Navigator.maybePop(scaffoldContext);
+                            },
+                          ),
+                        ]),
+                  ),
                 ),
-              ),),
+              ),
             ],
           );
         },

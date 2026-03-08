@@ -94,6 +94,6 @@ flutter:
 
   assets:
     - images/wp_ss_20240831_0002.png
-    - images/IMG_0023.PNG
-
+    - images/sample_photo_00.jpg
+    - images/wp_ss_20260308_0001.png
     - images/icons/flutter.svg
