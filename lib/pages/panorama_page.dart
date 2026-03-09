@@ -19,7 +19,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
 
     _items.addAll([
       MetroPanoramaItem(
-        title: "favorites",
+        title: const Text('favorites'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -32,7 +32,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
         ),
       ),
       MetroPanoramaItem(
-        title: "what's new",
+        title: const Text("what's new"),
         child: Wrap(
           spacing: 15,
           runSpacing: 15,
@@ -45,27 +45,35 @@ class _PanoramaPageState extends State<PanoramaPage> {
         ),
       ),
       MetroPanoramaItem(
-        title: "long view",
+        title: const Text("long view"),
         width: 800,
-        child: Row(
-            children: List.generate(
-                5,
-                (i) => Container(
-                      width: 120,
-                      height: 120,
-                      margin: const EdgeInsets.only(right: 15),
-                      color: Colors.orange.withOpacity(0.3 + (i % 5) * 0.1),
-                      child: Center(
-                          child: Text("Item ${i + 1}",
-                              style: const TextStyle(fontSize: 16))),
-                    )),
-          ),
+        child: Container(
+          width: 800,
+          height: 200,
+          color: Colors.orange.withOpacity(0.3),
+          child: const Center(
+              child: Text(
+                  "This is a long page\nYou can stop in the middle or swipe to trigger looping",
+                  style: TextStyle(fontSize: 18))),
+        ),
+        // Row(
+        //     children: List.generate(
+        //         5,
+        //         (i) => Container(
+        //               width: 120,
+        //               height: 120,
+        //               margin: const EdgeInsets.only(right: 15),
+        //               color: Colors.orange.withOpacity(0.3 + (i % 5) * 0.1),
+        //               child: Center(
+        //                   child: Text("Item ${i + 1}",
+        //                       style: const TextStyle(fontSize: 16))),
+        //             )),
+        //   ),
       ),
       MetroPanoramaItem(
-        title: "people",
-        width: 350,
+        title: const Text("people"),
         child: Container(
-          width: 280,
+          //width: 280,
           height: 250,
           color: Colors.purple.withOpacity(0.3),
           child: const Center(
@@ -90,24 +98,22 @@ class _PanoramaPageState extends State<PanoramaPage> {
           //   width: double.infinity,
           //   height: double.infinity,
           // ),
-            //           ColorFiltered(
-            //   colorFilter: ColorFilter.mode(
-            //     Colors.black.withOpacity(0.6),
-            //     BlendMode.darken,
-            //   ),
-            //   child: Image.asset(
-            //     'images/wp_ss_20260308_0001.png',
-            //     fit: BoxFit.cover,
-            //     alignment: Alignment.topLeft,
-            //   ),
-            // ),
+          //           ColorFiltered(
+          //   colorFilter: ColorFilter.mode(
+          //     Colors.black.withOpacity(0.6),
+          //     BlendMode.darken,
+          //   ),
+          //   child: Image.asset(
+          //     'images/wp_ss_20260308_0001.png',
+          //     fit: BoxFit.cover,
+          //     alignment: Alignment.topLeft,
+          //   ),
+          // ),
           MetroPanorama(
             title: const Text('photos'),
-            background: 
-
-            ColorFiltered(
+            background: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.4),
+                Colors.black.withOpacity(0.1),
                 BlendMode.darken,
               ),
               child: Image.asset(
