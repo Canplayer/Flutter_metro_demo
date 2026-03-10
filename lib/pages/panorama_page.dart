@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:metro_ui/application_bar.dart';
 import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/panorama.dart';
@@ -16,6 +18,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     _items.addAll([
       MetroPanoramaItem(
@@ -83,12 +86,27 @@ class _PanoramaPageState extends State<PanoramaPage> {
     ]);
   }
 
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
-      // onDidPush: () {
-      //   debugPrint('PanoramaPage pushed');
-      // },
+  applicationBar: MetroApplicationBar(
+    buttons: [
+      MetroAppBarButton(
+        icon: Icon(Icons.add),
+        label: '新建',
+        onPressed: () {},
+      ),
+    ],
+    menuItems: [
+      MetroAppBarMenuItem(label: '设置', onPressed: () {}),
+    ],
+  ),
       body: Stack(
         children: [
           //背景贴图
