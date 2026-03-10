@@ -95,21 +95,29 @@ class _PanoramaPageState extends State<PanoramaPage> {
   @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
-  applicationBar: MetroApplicationBar(
-    buttons: [
-      MetroAppBarButton(
-        icon: Icon(Icons.add),
-        label: '新建',
-        onPressed: () {},
+      applicationBar: MetroApplicationBar(
+        mini: true,
+        buttons: [
+          MetroAppBarButton(
+            icon: Icon(Icons.add),
+            label: '新建',
+            onPressed: () {},
+          ),
+          MetroAppBarButton(
+            icon: Icon(Icons.add),
+            label: '新建',
+            onPressed: () {},
+          ),
+        ],
+        menuItems: [
+          MetroAppBarMenuItem(label: '设置', onPressed: () {}),
+          MetroAppBarMenuItem(
+              label: '返回',
+              onPressed: () {
+                Navigator.maybePop(context);
+              }),
+        ],
       ),
-    ],
-    menuItems: [
-      MetroAppBarMenuItem(label: '设置', onPressed: () {}),
-      MetroAppBarMenuItem(label: '返回', onPressed: () {
-        Navigator.maybePop(context);
-      }),
-    ],
-  ),
       body: Stack(
         children: [
           //背景贴图
@@ -144,19 +152,9 @@ class _PanoramaPageState extends State<PanoramaPage> {
               ),
             ),
             items: _items,
-            onPageChange: (index) {
-              debugPrint('Moved to page: $index');
-            },
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: MetroButton(
-              onTap: () {
-                Navigator.maybePop(context);
-              },
-              child: const Text('Back'),
-            ),
+            // onPageChange: (index) {
+            //   debugPrint('Moved to page: $index');
+            // },
           ),
         ],
       ),
