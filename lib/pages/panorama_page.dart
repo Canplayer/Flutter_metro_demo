@@ -15,6 +15,9 @@ class PanoramaPage extends StatefulWidget {
 class _PanoramaPageState extends State<PanoramaPage> {
   final List<MetroPanoramaItem> _items = [];
 
+  //当前所在页数
+  int _currentPage = 0;
+
   @override
   void initState() {
     super.initState();
@@ -96,8 +99,9 @@ class _PanoramaPageState extends State<PanoramaPage> {
   Widget build(BuildContext context) {
     return MetroPageScaffold(
       applicationBar: MetroApplicationBar(
-        mini: true,
+        mini: _currentPage == 3,
         buttons: [
+          if (_currentPage == 0)
           MetroAppBarButton(
             icon: Icon(Icons.add),
             label: '新建',
@@ -139,6 +143,11 @@ class _PanoramaPageState extends State<PanoramaPage> {
           //   ),
           // ),
           MetroPanorama(
+            onPageChange: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
             title: const Text('photos'),
             background: ColorFiltered(
               colorFilter: ColorFilter.mode(
