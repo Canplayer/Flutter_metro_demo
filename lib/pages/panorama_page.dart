@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:metro_ui/application_bar.dart';
+import 'package:metro_ui/metro_page_push.dart';
+import 'package:metro_ui/page.dart';
 import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/panorama.dart';
@@ -13,6 +15,7 @@ class PanoramaPage extends StatefulWidget {
 }
 
 class _PanoramaPageState extends State<PanoramaPage> {
+  final GlobalKey<MetroPageScaffoldState> _scaffoldKey = GlobalKey<MetroPageScaffoldState>();
   final List<MetroPanoramaItem> _items = [];
 
   //当前所在页数
@@ -89,27 +92,41 @@ class _PanoramaPageState extends State<PanoramaPage> {
     ]);
   }
 
+  @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return MetroPageScaffold(
+      key: _scaffoldKey,
       applicationBar: MetroApplicationBar(
         mini: _currentPage == 3,
         buttons: [
-          if (_currentPage == 0)
+          if (_currentPage == 1)
+            MetroAppBarButton(
+              icon: Icon(Icons.add),
+              label: 'new',
+              onPressed: () {
+                metroPagePush(
+                  context,
+                  MetroPageRoute(
+                    builder: (context) {
+                      return const PanoramaPage();
+                    },
+                  ),
+                  scaffoldKey: _scaffoldKey
+                  //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
+                  //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
+                  //dataToPass: index,
+                );
+              },
+            ),
           MetroAppBarButton(
-            icon: Icon(Icons.add),
-            label: '新建',
-            onPressed: () {},
-          ),
-          MetroAppBarButton(
-            icon: Icon(Icons.add),
-            label: '新建',
+            icon: Icon(Icons.search),
+            label: 'search',
             onPressed: () {},
           ),
         ],
