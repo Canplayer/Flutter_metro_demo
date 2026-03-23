@@ -88,7 +88,7 @@ class _ArtisticTextPageState extends State<ArtisticTextPage>
   }
 
   void jumpToLauncher() {
-    metroPagePush(
+    metroPagePushAndRemoveUntil(
       context,
       scaffoldKey: _scaffoldKey,
       MetroPageRoute(
