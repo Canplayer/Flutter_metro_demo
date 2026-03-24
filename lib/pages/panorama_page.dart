@@ -15,7 +15,8 @@ class PanoramaPage extends StatefulWidget {
 }
 
 class _PanoramaPageState extends State<PanoramaPage> {
-  final GlobalKey<MetroPageScaffoldState> _scaffoldKey = GlobalKey<MetroPageScaffoldState>();
+  final GlobalKey<MetroPageScaffoldState> _scaffoldKey =
+      GlobalKey<MetroPageScaffoldState>();
   final List<MetroPanoramaItem> _items = [];
 
   //当前所在页数
@@ -28,7 +29,18 @@ class _PanoramaPageState extends State<PanoramaPage> {
 
     _items.addAll([
       MetroPanoramaItem(
-        title: const Text('favorites'),
+        title: const Row(
+          //贴在两边
+          children: [
+            //播放按钮
+            Icon(Icons.play_arrow, size: 32),
+            SizedBox(width: 8),
+            Text('favorites'),
+            Expanded(child: SizedBox()),
+            //向右箭头
+            Icon(Icons.arrow_forward_ios, size: 32),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -110,18 +122,15 @@ class _PanoramaPageState extends State<PanoramaPage> {
               icon: Icon(Icons.add),
               label: 'new',
               onPressed: () {
-                metroPagePush(
-                  context,
-                  MetroPageRoute(
-                    builder: (context) {
-                      return const PanoramaPage();
-                    },
-                  ),
-                  scaffoldKey: _scaffoldKey
-                  //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
-                  //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
-                  //dataToPass: index,
-                );
+                metroPagePush(context, MetroPageRoute(
+                  builder: (context) {
+                    return const PanoramaPage();
+                  },
+                ), scaffoldKey: _scaffoldKey
+                    //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
+                    //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
+                    //dataToPass: index,
+                    );
               },
             ),
           MetroAppBarButton(

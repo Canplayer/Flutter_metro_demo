@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metro_demo/pages/about_page.dart';
 import 'package:metro_demo/pages/panorama_pagent.dart';
+import 'package:metro_demo/pages/safearea.dart';
 import 'package:metro_demo/pages/spinner_demo_page.dart';
 import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/pages/panorama_page.dart';
@@ -66,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         page: const SpinnerDemoPage()),
     App(name: 'About', icon: Icons.abc_outlined, page: const AboutPage()),
     App(name: 'People', icon: Icons.people, page: const PanoramaNewPage2()),
-    App(name: 'Weather', icon: Icons.wb_sunny, page: const PanoramaPage()),
+    App(name: 'SafeAreaPage', icon: Icons.wb_sunny, page: const SafeAreaPage()),
     App(name: 'Store', icon: Icons.store, page: const PanoramaPage()),
     App(name: 'News', icon: Icons.article, page: const PanoramaPage()),
     App(name: 'Photos', icon: Icons.photo, page: const PanoramaPage()),
