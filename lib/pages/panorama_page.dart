@@ -175,15 +175,18 @@ class _PanoramaPageState extends State<PanoramaPage> {
               });
             },
             title: const Text('photos'),
-            background: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.1),
-                BlendMode.darken,
-              ),
-              child: Image.asset(
-                'images/sample_photo_00.jpg',
-                fit: BoxFit.cover,
-                alignment: Alignment.topLeft,
+            background: AspectRatio(
+              aspectRatio: 1.0,
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.1),
+                  BlendMode.darken,
+                ),
+                child: Image.asset(
+                  'images/sample_photo_00.jpg',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topLeft,
+                ),
               ),
             ),
             items: _items,
