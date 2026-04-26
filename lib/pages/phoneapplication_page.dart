@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metro_ui/stack_panel.dart';
-import 'package:metro_ui/widgets/switcher.dart';
+import 'package:metro_ui/widgets/stack_panel.dart';
 import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';

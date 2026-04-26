@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:metro_ui/application_bar.dart';
 import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
-import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/panorama.dart';
 
