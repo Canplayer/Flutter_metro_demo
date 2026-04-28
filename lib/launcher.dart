@@ -2,13 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:metro_demo/pages/about_page.dart';
-import 'package:metro_demo/pages/panorama_pagent.dart';
-import 'package:metro_demo/pages/rot_test.dart';
 import 'package:metro_demo/pages/safearea.dart';
 import 'package:metro_demo/pages/spinner_demo_page.dart';
 import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/pages/panorama_page.dart';
-import 'package:metro_demo/pages/phoneapplication_page.dart';
 import 'package:metro_demo/splashscreen_page.dart';
 import 'package:metro_demo/pages/switch_demo_page.dart';
 import 'package:metro_ui/animations.dart';
@@ -17,6 +14,7 @@ import 'package:metro_ui/metro_page_push.dart';
 import 'package:metro_ui/page.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/tile.dart';
+import 'package:metro_ui/widgets/context_menu.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -49,127 +47,159 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _testIndex = 0;
 
   List<App> get apps => [
-    App(
-        name: 'Panorama',
-        tile: LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            MetroAppTile(
-              icon: const Icon(
-                Icons.photo,
-                size: 48,
-              ),
-              title: 'Photos',
-              count: _testIndex,
-              backgroundColor: Colors.green,
+        App(
+            name: 'Panorama',
+            tile: LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: const Text('Panorama'),
+              children: [
+                MetroAppTile(
+                  icon: const Icon(
+                    Icons.map,
+                    size: 70,
+                  ),
+                  count: _testIndex,
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Panorama Hub页面，具有浓郁的WP特色',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
             ),
-          ],
+            page: const PanoramaPage()),
+        App(
+          name: 'NormalPage',
+          tile: const LiveTile(
+            size: LiveTileSize.medium,
+            flipStyle: FlipStyle.elastic,
+            name: Text('Normal Page'),
+            children: [
+              MetroAppTile(
+                icon: Icon(
+                  Icons.file_copy,
+                  size: 70,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  '普通带有标题副标题的页面',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          page: const AboutPage(),
         ),
-        page: const PanoramaPage()),
-    App(
-        name: 'NormalPage',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.phone),
-          ],
-        ),
-        page: const PhoneApplicationPage()),
-    App(
-        name: 'Switch Demo',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.toggle_on),
-          ],
-        ),
-        page: const SwitchDemoPage()),
-    App(
-        name: 'Splash Screen',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.star),
-          ],
-        ),
-        page: const ArtisticTextPage()),
-    App(
-        name: 'Live Tile',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.phone),
-          ],
-        ),
-        page: const PanoramaPage()),
-    App(
-        name: 'SpinnerDemoPage',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.calendar_today),
-          ],
-        ),
-        page: const SpinnerDemoPage()),
-    App(
-        name: 'About',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.abc_outlined),
-          ],
-        ),
-        page: const AboutPage()),
-    App(
-        name: 'People',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.people),
-          ],
-        ),
-        page: const PanoramaNewPage2()),
-    App(
-        name: 'SafeArea Tester',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.wb_sunny),
-          ],
-        ),
-        page: const SafeAreaPage()),
-    App(
-        name: '3D透视测试页',
-        tile: const LiveTile(
-          size: LiveTileSize.medium,
-          flipStyle: FlipStyle.elastic,
-          children: [
-            Icon(Icons.article),
-          ],
-        ),
-        page: const RotPage()),
-  ];
+        App(
+            name: 'Switcher',
+            tile: const LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: Text('Switcher'),
+              children: [
+                MetroAppTile(
+                  icon: Icon(
+                    Icons.toggle_on,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    '开关组件演示',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            page: const SwitchDemoPage()),
+        App(
+            name: 'Splash Screen',
+            tile: const LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: Text('Splash Screen'),
+              children: [
+                MetroAppTile(
+                  icon: Icon(
+                    Icons.star,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    '开屏页面再走一次',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            page: const ArtisticTextPage()),
+        App(
+            name: 'SpinnerDemoPage',
+            tile: const LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: Text('Spinner'),
+              children: [
+                MetroAppTile(
+                  icon: Icon(
+                    Icons.refresh,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Metro风格的加载动画',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            page: const SpinnerDemoPage()),
+        App(
+            name: 'SafeArea Tester',
+            tile: const LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: Text('SafeArea Tester'),
+              children: [
+                MetroAppTile(
+                  icon: Icon(
+                    Icons.fullscreen,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'SafeArea适配测试',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            page: const SafeAreaPage()),
+      ];
 
   @override
   void initState() {
     super.initState();
     //打印设备屏幕宽度
 
-    _keys.addAll(List.generate(10, (index) => GlobalKey()));
+    _keys.addAll(List.generate(apps.length, (index) => GlobalKey()));
 
     _tileVisibility =
-        List.generate(10, (index) => false); // 初始化所有 tile 为可见
+        List.generate(apps.length, (index) => false); // 初始化所有 tile 为可见
 
-    _controllers = List.generate(10, (index) {
+    _controllers = List.generate(apps.length, (index) {
       return AnimationController(
         vsync: this,
       );
@@ -217,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Future<void> _startPushNextAnimations(GlobalKey tapKey) async {
     // 找出所有可见的元素索引
     final List<int> visibleIndices = [];
-    for (int i = 0; i < _keys.length; i++) {
+    for (int i = 0; i < apps.length; i++) {
       if (_isWidgetVisible(_keys[i])) {
         visibleIndices.add(i);
       }
@@ -271,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
 
     // 执行动画（只对可见元素）
-    for (int i = _keys.length - 1; i >= 0; i--) {
+    for (int i = apps.length - 1; i >= 0; i--) {
       if (visibleIndices.contains(i)) {
         if (_keys[i] == tapKey) {
           thisIndex = i;
@@ -300,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // 找出所有可见的元素索引
       final List<int> visibleIndices = [];
-      for (int i = 0; i < _keys.length; i++) {
+      for (int i = 0; i < apps.length; i++) {
         if (_isWidgetVisible(_keys[i])) {
           visibleIndices.add(i);
         } else {
@@ -358,7 +388,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ((pushTime - singleTileTime) / (visibleTilesCount - 1)).round();
 
       // 执行动画（只对可见元素）
-      for (int i = _keys.length - 1; i >= 0; i--) {
+      for (int i = apps.length - 1; i >= 0; i--) {
         if (visibleIndices.contains(i)) {
           setState(() {
             _tileVisibility[i] = true; // 动画开始前直接显示
@@ -374,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // 找出所有可见的元素索引
       final List<int> visibleIndices = [];
-      for (int i = 0; i < _keys.length; i++) {
+      for (int i = 0; i < apps.length; i++) {
         if (_isWidgetVisible(_keys[i])) {
           visibleIndices.add(i);
         } else {
@@ -432,7 +462,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ((pushTime - singleTileTime) / visibleTilesCount).round();
 
       // 执行动画（只对可见元素）
-      for (int i = _keys.length - 1; i >= 0; i--) {
+      for (int i = apps.length - 1; i >= 0; i--) {
         if (visibleIndices.contains(i)) {
           setState(() {
             _tileVisibility[i] = true; // 动画开始前直接显示
@@ -505,27 +535,52 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               child: LeftEdgeRotateAnimation(
                                 rotation: _animations[index].value,
                                 child: SizedBox(
-                                  key: _keys[index],
-                                  width: 168,
-                                  height: 168,
-                                  child: Tile(
-                                    allowBack: true,
-                                    onTap: () {
-                                      metroPagePush(
-                                        context,
-                                        MetroPageRoute(
-                                          builder: (context) {
-                                            return app.page;
-                                          },
+                                    key: _keys[index],
+                                    width: 168,
+                                    height: 168,
+                                    child: MetroContextMenu(
+                                      child: Tile(
+                                        allowBack: true,
+                                        onTap: () {
+                                          metroPagePush(
+                                            context,
+                                            MetroPageRoute(
+                                              builder: (context) {
+                                                return app.page;
+                                              },
+                                            ),
+                                            //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
+                                            //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
+                                            dataToPass: index,
+                                          );
+                                        },
+                                        child: app.tile,
+                                      ),
+
+                                      // 这里传入完全展开后的菜单内容
+                                      menu: Container(
+                                        height: 150,
+                                        color: Colors.grey.shade900,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            IconButton(
+                                                icon: Icon(Icons.share,
+                                                    color: Colors.white),
+                                                onPressed: () {}),
+                                            IconButton(
+                                                icon: Icon(Icons.delete,
+                                                    color: Colors.white),
+                                                onPressed: () {}),
+                                            IconButton(
+                                                icon: Icon(Icons.edit,
+                                                    color: Colors.white),
+                                                onPressed: () {}),
+                                          ],
                                         ),
-                                        //提供一种便利的方法，可以将范型参数传递给onDidPushNext，主要设计目的是为了方便动画传参
-                                        //例如：Windows Phone中，被点击的Tile往往是最后一个飞出的，可能需要把Tile的index传递过去，然后在onDidPushNext中处理动画
-                                        dataToPass: index,
-                                      );
-                                    },
-                                    child: app.tile,
-                                  ),
-                                ),
+                                      ),
+                                    )),
                               ),
                             );
                           },
@@ -557,11 +612,13 @@ enum FlipStyle { normal, elastic }
 class LiveTile extends StatefulWidget {
   final List<Widget> children;
   final LiveTileSize size;
+  final Widget? name;
   final FlipStyle flipStyle;
 
   const LiveTile({
     super.key,
     required this.children,
+    this.name,
     this.size = LiveTileSize.medium,
     this.flipStyle = FlipStyle.normal,
   });
@@ -601,8 +658,8 @@ class _LiveTileState extends State<LiveTile>
     _timer?.cancel();
     // 生成一个 3.0 到 6.0 之间的随机浮点数
     final double randomSeconds = 3.0 + math.Random().nextDouble() * 3.0;
-    _timer = Timer(
-        Duration(milliseconds: (randomSeconds * 1000).round()), _flip);
+    _timer =
+        Timer(Duration(milliseconds: (randomSeconds * 1000).round()), _flip);
   }
 
   void _flip() async {
@@ -661,9 +718,8 @@ class _LiveTileState extends State<LiveTile>
           final bool showBack = rotationValue > math.pi / 2;
           final int nextIndex = (_currentIndex + 1) % widget.children.length;
 
-          return Stack(
-            fit: StackFit.expand,
-            children: List.generate(widget.children.length, (index) {
+          return Stack(fit: StackFit.expand, children: [
+            ...List.generate(widget.children.length, (index) {
               bool isVisibleFace = false;
               Matrix4 transform = Matrix4.identity();
 
@@ -682,13 +738,29 @@ class _LiveTileState extends State<LiveTile>
                   transform: transform,
                   alignment: Alignment.center,
                   child: Container(
-                    color: Colors.blueGrey,
-                    child: widget.children[index],
+                    color: Theme.of(context).colorScheme.primary,
+                    child: Stack(
+                      children: [
+                        widget.children[index],
+                        if (widget.name != null)
+                          Positioned(
+                            left: 10,
+                            bottom: 6,
+                            child: DefaultTextStyle.merge(
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              child: widget.name!,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               );
             }),
-          );
+          ]);
         },
       ),
     );
@@ -698,14 +770,12 @@ class _LiveTileState extends State<LiveTile>
 //普通磁贴模板
 class MetroAppTile extends StatefulWidget {
   final Widget icon;
-  final String title;
   final int? count;
   final Color? backgroundColor;
 
   const MetroAppTile({
     super.key,
     required this.icon,
-    required this.title,
     this.count,
     this.backgroundColor,
   });
@@ -729,13 +799,8 @@ class _MetroAppTileState extends State<MetroAppTile>
     );
 
     _rotationAnimation = Tween<double>(begin: 0.5, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve:  Curves.elasticOut),
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
-
-
-
-
-
 
     if (widget.count != null) {
       _displayCount = widget.count;
@@ -772,57 +837,41 @@ class _MetroAppTileState extends State<MetroAppTile>
   Widget build(BuildContext context) {
     return Container(
       color: widget.backgroundColor ?? Theme.of(context).colorScheme.primary,
-      child: Stack(
-        children: [
+      child:
           // 图标与数字组合：居中
           Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: widget.icon,
-                ),
-                if (_displayCount != null && _displayCount! > 0) ...[
-                  const SizedBox(width: 8),
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.identity()
-                          ..rotateX(_rotationAnimation.value * math.pi),
-                        child: Text(
-                          '$_displayCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ],
+        child: Row(
+          //mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              child: widget.icon,
             ),
-          ),
-          // 标题：左下角
-          Positioned(
-            left: 10,
-            bottom: 6,
-            child: Text(
-              widget.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+            if (_displayCount != null && _displayCount! > 0) ...[
+              const SizedBox(width: 8),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..rotateX(_rotationAnimation.value * math.pi),
+                    child: Text(
+                      '$_displayCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 48,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
+      // 标题：左下角
     );
   }
 }
