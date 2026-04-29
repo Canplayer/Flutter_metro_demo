@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:metro_demo/pages/about_page.dart';
 import 'package:metro_demo/pages/safearea.dart';
 import 'package:metro_demo/pages/spinner_demo_page.dart';
+import 'package:metro_demo/pages/startmenu_page.dart';
 import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/pages/panorama_page.dart';
 import 'package:metro_demo/splashscreen_page.dart';
@@ -187,6 +188,30 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ],
             ),
             page: const SafeAreaPage()),
+        App(
+            name: 'StartMenu',
+            tile: const LiveTile(
+              size: LiveTileSize.medium,
+              flipStyle: FlipStyle.elastic,
+              name: Text('StartMenu'),
+              children: [
+                MetroAppTile(
+                  icon: Icon(
+                    Icons.menu,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'StartMenu',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            page: const StartMenu(),
+        ),
       ];
 
   @override
