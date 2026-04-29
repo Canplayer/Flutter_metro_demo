@@ -539,6 +539,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                     width: 168,
                                     height: 168,
                                     child: MetroContextMenu(
+                                      menu: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          MetroContextMenuItem(
+                                            onTap: () => print('Pin to start'),
+                                            child: const Text('pin to start'),
+                                          ),
+                                          MetroContextMenuItem(
+                                            onTap: () => print('Pin to start'),
+                                            child: const Text('pin to start'),
+                                          ),
+                                        ],
+                                      ),
                                       child: Tile(
                                         allowBack: true,
                                         onTap: () {
@@ -555,30 +571,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                           );
                                         },
                                         child: app.tile,
-                                      ),
-
-                                      // 这里传入完全展开后的菜单内容
-                                      menu: Container(
-                                        height: 150,
-                                        color: Colors.grey.shade900,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            IconButton(
-                                                icon: Icon(Icons.share,
-                                                    color: Colors.white),
-                                                onPressed: () {}),
-                                            IconButton(
-                                                icon: Icon(Icons.delete,
-                                                    color: Colors.white),
-                                                onPressed: () {}),
-                                            IconButton(
-                                                icon: Icon(Icons.edit,
-                                                    color: Colors.white),
-                                                onPressed: () {}),
-                                          ],
-                                        ),
                                       ),
                                     )),
                               ),

@@ -139,7 +139,7 @@ class _PanoramaPageState extends State<PanoramaPage> {
           ),
         ],
         menuItems: [
-          MetroAppBarMenuItem(label: '设置', onPressed: () {}),
+          MetroAppBarMenuItem(label: 'Settings', onPressed: () {}),
           MetroAppBarMenuItem(
               label: '返回',
               onPressed: () {
