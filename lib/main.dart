@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       //229,20,0
       metroColor: Color.fromARGB(255, 229, 20, 0),
       //themeMode: MetroThemeMode.light,
-      useWVGAMode: true,
+      //useWVGAMode: true,
       //version: MetroDesignVersion.wp7,
       // 应用自定义滚动行为
       scrollBehavior: MetroScrollBehavior(),

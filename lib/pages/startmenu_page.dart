@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:metro_ui/widgets/button.dart';
 import 'package:metro_ui/page_scaffold.dart';
 import 'package:metro_ui/widgets/stack_panel.dart';
 
@@ -22,13 +21,13 @@ class _StartMenuState extends State<StartMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return MetroPageScaffold(
+    return const MetroPageScaffold(
       //backgroundColor: Colors.blueGrey,
-      stackPanel: const StackPanel(
+      stackPanel: StackPanel(
         top: Text('FLUMETRO'),
         bottom: Text('about'),
       ),
-      body: const MetroDraggableGrid(),
+      body: MetroDraggableGrid(),
     );
   }
 }
@@ -88,14 +87,18 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
         id: '1', x: 0, y: 0, width: 2, height: 2, color: Colors.yellow),
     GridItemData(
         id: '2', x: 2, y: 0, width: 1, height: 1, color: Colors.yellow),
-        GridItemData(
+    GridItemData(
         id: '3', x: 3, y: 0, width: 1, height: 1, color: Colors.yellow),
-            GridItemData(
+    GridItemData(
         id: '4', x: 2, y: 1, width: 1, height: 1, color: Colors.yellow),
-        GridItemData(
+    GridItemData(
         id: '5', x: 3, y: 1, width: 1, height: 1, color: Colors.yellow),
-        GridItemData(
+    GridItemData(
         id: '6', x: 0, y: 2, width: 4, height: 2, color: Colors.yellow),
+    GridItemData(
+        id: '7', x: 0, y: 4, width: 2, height: 2, color: Colors.yellow),
+    GridItemData(
+        id: '8', x: 2, y: 4, width: 2, height: 2, color: Colors.yellow),
   ];
 
   List<GridItemData>? originalItems;
@@ -104,6 +107,9 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
   int lastHoverX = -1;
   int lastHoverY = -1;
 
+  // --- 新增：记录抓取点相对磁贴左上角的偏移 ---
+  Offset dragGrabOffset = Offset.zero;
+
   @override
   void dispose() {
     hoverTimer?.cancel();
@@ -111,13 +117,11 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
   }
 
   void _onDragStarted(String id) {
-    debugPrint('0');
     activeDragId = id;
     originalItems = items.map((e) => e.clone()).toList(); // 保存布局A
   }
 
   void _onDragEnd() {
-    debugPrint('2');
     activeDragId = null;
     originalItems = null; // 接受布局B的最终状态
     hoverTimer?.cancel();
@@ -126,9 +130,7 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
   }
 
   void _onDragCanceled() {
-    debugPrint('Drag canceled, reverting to original layout');
     if (originalItems != null) {
-      debugPrint('1');
       setState(() {
         items = originalItems!;
       });
@@ -136,11 +138,13 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
     _onDragEnd();
   }
 
-void _updatePreview(int targetX, int targetY) {
+  void _updatePreview(int targetX, int targetY) {
     if (originalItems == null || activeDragId == null) return;
 
-    List<GridItemData> nextLayout = originalItems!.map((e) => e.clone()).toList();
-    GridItemData targetItem = nextLayout.firstWhere((e) => e.id == activeDragId);
+    List<GridItemData> nextLayout =
+        originalItems!.map((e) => e.clone()).toList();
+    GridItemData targetItem =
+        nextLayout.firstWhere((e) => e.id == activeDragId);
     targetItem.x = targetX;
     targetItem.y = targetY;
 
@@ -151,110 +155,185 @@ void _updatePreview(int targetX, int targetY) {
 
     if (directCollisions.isNotEmpty) {
       bool moved = false;
+      bool canBreakCeiling = false;
+      int ceilingOffsetX = 0;
+      int ceilingOffsetY = 0;
+
+      // --- 新增：提取碰撞组的整体边界与中心点 ---
+      int groupLeft =
+          directCollisions.map((e) => e.x).reduce((a, b) => a < b ? a : b);
+      int groupRight = directCollisions
+          .map((e) => e.x + e.width)
+          .reduce((a, b) => a > b ? a : b);
+      int groupTop =
+          directCollisions.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+      int groupBottom = directCollisions
+          .map((e) => e.y + e.height)
+          .reduce((a, b) => a > b ? a : b);
+
+      double groupCenterX = groupLeft + (groupRight - groupLeft) / 2.0;
+      double groupCenterY = groupTop + (groupBottom - groupTop) / 2.0;
+
+      double targetCenterX = targetItem.x + targetItem.width / 2.0;
+      double targetCenterY = targetItem.y + targetItem.height / 2.0;
+      // ------------------------------------------
 
       // 定义尝试的方向：上、左、右、下
-      final directions = [const Offset(0, -1), const Offset(-1, 0), const Offset(1, 0), const Offset(0, 1)];
+      final directions = [
+        const Offset(0, -1),
+        const Offset(-1, 0),
+        const Offset(1, 0),
+        const Offset(0, 1)
+      ];
 
       for (var dir in directions) {
-        // 计算该方向下，组需要移动到的“目标偏移量”
-        // 比如左移，偏移量 = (拖拽物左边界 - 组右边界)
+        // --- 核心修复：物理防穿透检查 ---
+        // 绝对禁止碰撞组向着“穿过”拖拽物的方向移动
+        if (dir.dx < 0 && groupCenterX > targetCenterX)
+          continue; // 想向左推，但组在右侧（禁止向左穿透）
+        if (dir.dx > 0 && groupCenterX < targetCenterX)
+          continue; // 想向右推，但组在左侧（禁止向右穿透）
+        if (dir.dy < 0 && groupCenterY > targetCenterY)
+          continue; // 想向上推，但组在下方（禁止向上穿透）
+        if (dir.dy > 0 && groupCenterY < targetCenterY)
+          continue; // 想向下推，但组在上方（禁止向下穿透）
+        // --------------------------------
+
         int offsetX = 0;
         int offsetY = 0;
 
-        if (dir.dx < 0) { // 向左
-          int groupRight = directCollisions.map((e) => e.x + e.width).reduce((a, b) => a > b ? a : b);
+        // ... (保持原有的偏移计算和越界检查逻辑不变)
+        if (dir.dx < 0) {
           offsetX = targetItem.x - groupRight;
-        } else if (dir.dx > 0) { // 向右
-          int groupLeft = directCollisions.map((e) => e.x).reduce((a, b) => a < b ? a : b);
+        } else if (dir.dx > 0) {
           offsetX = (targetItem.x + targetItem.width) - groupLeft;
-        } else if (dir.dy < 0) { // 向上
-          int groupBottom = directCollisions.map((e) => e.y + e.height).reduce((a, b) => a > b ? a : b);
+        } else if (dir.dy < 0) {
           offsetY = targetItem.y - groupBottom;
-        } else if (dir.dy > 0) { // 向下
-          int groupTop = directCollisions.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+        } else if (dir.dy > 0) {
           offsetY = (targetItem.y + targetItem.height) - groupTop;
         }
 
-        // 获取递归后的完整碰撞组
-        List<GridItemData> fullGroup = _findRecursiveGroup(nextLayout, directCollisions, targetItem, offsetX, offsetY);
+        bool isOutOfBoundsX = false;
+        bool isColliding = false;
+        bool isBreakingCeiling = false;
 
-        if (_canMoveFullGroup(nextLayout, fullGroup, targetItem, offsetX, offsetY)) {
-          for (var item in fullGroup) {
-            item.x += offsetX;
-            item.y += offsetY;
+        for (var item in directCollisions) {
+          int nx = item.x + offsetX;
+          int ny = item.y + offsetY;
+
+          if (nx < 0 || nx + item.width > columns) {
+            isOutOfBoundsX = true;
+            break;
           }
-          moved = true;
-          break;
+
+          GridItemData ghost = item.clone();
+          ghost.x = nx;
+          ghost.y = ny;
+
+          for (var other in nextLayout) {
+            if (other.id == targetItem.id) continue;
+            if (directCollisions.any((e) => e.id == other.id)) continue;
+
+            if (ghost.overlaps(other)) {
+              isColliding = true;
+              break;
+            }
+          }
+          if (isColliding) break;
+
+          if (ny < 0) {
+            isBreakingCeiling = true;
+          }
+        }
+
+        if (!isOutOfBoundsX && !isColliding) {
+          if (!isBreakingCeiling) {
+            for (var item in directCollisions) {
+              item.x += offsetX;
+              item.y += offsetY;
+            }
+            moved = true;
+            break;
+            //破天只允许有一个物体，若是受到干扰的物体超过一个了，就不破天了(原版就是这样的)
+          } else if (dir.dy < 0 && directCollisions.length == 1) {
+            canBreakCeiling = true;
+            ceilingOffsetX = offsetX;
+            ceilingOffsetY = offsetY;
+          }
         }
       }
 
-      // 2. 保底方案：整体向下平移（插入行）
+      if (!moved && canBreakCeiling) {
+        for (var item in directCollisions) {
+          item.x += ceilingOffsetX;
+          item.y += ceilingOffsetY;
+        }
+        moved = true;
+      }
+
+      // 3. 终极保底方案：楔子分裂法 (Wedge Fallback)
+      // 如果四个方向都不通，且无法突破天花板，则从拖拽物的第一行切开布局
       if (!moved) {
-        int minYOfImpacted = directCollisions.fold(targetItem.y, (prev, e) => e.y < prev ? e.y : prev);
-        for (var item in nextLayout) {
-          if (item.id != targetItem.id && item.y >= minYOfImpacted) {
-            item.y += targetItem.height;
+        // B. 处理下半部分：与拖拽物第一行下方发生重叠的组件
+        var belowRowCollisions =
+            directCollisions.where((e) => e.y > targetItem.y).toList();
+        if (belowRowCollisions.isNotEmpty) {
+          debugPrint('触发楔子分裂法，调整下半部分布局');
+          // 计算需要整体向下推多少格，才能让这些重叠物的顶部脱离拖拽物的底部
+          int maxShiftDown = 0;
+          for (var item in belowRowCollisions) {
+            int requiredShift = (targetItem.y + targetItem.height) - item.y;
+            if (requiredShift > maxShiftDown) maxShiftDown = requiredShift;
+          }
+          // 将布局中所有在 targetItem 下方的组件（无论是否重叠）整体下移
+          for (var item in nextLayout) {
+            if (item.id != targetItem.id && item.y > targetItem.y) {
+              item.y += maxShiftDown;
+            }
+          }
+        }
+
+        // A. 处理上半部分：与拖拽物第一行（或之上）发生重叠的组件
+        var topRowCollisions =
+            directCollisions.where((e) => e.y <= targetItem.y).toList();
+        if (topRowCollisions.isNotEmpty) {
+          debugPrint('触发楔子分裂法，调整上半部分布局');
+          // 计算需要整体向上推多少格，才能让这些重叠物的底部脱离拖拽物的第一行
+          int maxShiftUp = 0;
+          for (var item in topRowCollisions) {
+            int requiredShift = (item.y + item.height) - targetItem.y;
+            if (requiredShift > maxShiftUp) maxShiftUp = requiredShift;
+          }
+          // 将布局中所有在 targetItem 及以上的组件（无论是否重叠）整体上移，保持相对布局不乱
+          for (var item in nextLayout) {
+            if (item.id != targetItem.id && item.y <= targetItem.y) {
+              item.y -= maxShiftUp;
+            }
           }
         }
       }
     }
-
-    // 3. 最终碰撞清理 & 消除空行
-    //_resolveCascadingOverlaps(nextLayout, targetItem);
-    _compactLayout(nextLayout);
 
     setState(() {
       items = nextLayout;
     });
   }
 
-  // 递归寻找所有受影响的物体
-  List<GridItemData> _findRecursiveGroup(List<GridItemData> allItems, List<GridItemData> currentGroup, GridItemData draggingItem, int dx, int dy) {
-    List<GridItemData> totalGroup = List.from(currentGroup);
-    bool added;
-    do {
-      added = false;
-      List<GridItemData> toAdd = [];
-      for (var member in totalGroup) {
-        // 模拟成员移动后的位置
-        GridItemData ghost = member.clone();
-        ghost.x += dx;
-        ghost.y += dy;
-
-        for (var other in allItems) {
-          if (other.id == draggingItem.id || totalGroup.any((m) => m.id == other.id)) continue;
-          if (ghost.overlaps(other)) {
-            toAdd.add(other);
-            added = true;
-          }
+  void _finalizeLayout() {
+    setState(() {
+      // 1. 归一化：处理负值坐标，整体下移
+      int minY = items.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+      if (minY < 0) {
+        int offset = minY.abs();
+        for (var item in items) {
+          item.y += offset;
         }
       }
-      totalGroup.addAll(toAdd);
-    } while (added);
-    return totalGroup;
+
+      // 2. 压缩空行：消除中间和顶部的空白
+      _compactLayout(items);
+    });
   }
-
-  // 检查整个递归后的组是否可以移动到新位置
-  bool _canMoveFullGroup(List<GridItemData> allItems, List<GridItemData> group, GridItemData draggingItem, int dx, int dy) {
-    for (var item in group) {
-      int nx = item.x + dx;
-      int ny = item.y + dy;
-      
-      // 边界检查
-      if (nx < 0 || nx + item.width > columns || ny < 0) return false;
-
-      GridItemData ghost = item.clone();
-      ghost.x = nx; ghost.y = ny;
-
-      // 不能与拖拽物重叠
-      if (ghost.overlaps(draggingItem)) return false;
-
-      // 理论上递归组不会与其他静态物体重叠，因为重叠的都被拉进组了
-      // 但如果撞到了无法移动的边界或逻辑错误，这里做最终把关
-    }
-    return true;
-  }
-
 
   /// 消除空行逻辑
   void _compactLayout(List<GridItemData> allItems) {
@@ -289,55 +368,6 @@ void _updatePreview(int targetX, int targetY) {
     }
   }
 
-  // 辅助函数：处理连锁重叠（始终向下推）
-  void _resolveCascadingOverlaps(
-      List<GridItemData> allItems, GridItemData targetItem) {
-    bool hasOverlap = true;
-    int safetyCounter = 0; // 防止无限循环
-    while (hasOverlap && safetyCounter < 50) {
-      hasOverlap = false;
-      safetyCounter++;
-      for (var i in allItems) {
-        for (var j in allItems) {
-          if (i.id != j.id && i.overlaps(j)) {
-            // 永远让非拖拽物或者是更靠下的物体往下走
-            GridItemData topper = (i.id == targetItem.id)
-                ? i
-                : (j.id == targetItem.id ? j : (i.y <= j.y ? i : j));
-            GridItemData lower = (topper == i) ? j : i;
-
-            lower.y = topper.y + topper.height;
-            hasOverlap = true;
-          }
-        }
-      }
-    }
-  }
-
-  // 检测组是否可以移动（保持原样）
-  bool _canMoveGroupTogether(List<GridItemData> allItems,
-      List<GridItemData> group, GridItemData draggingItem, Offset dir) {
-    for (var item in group) {
-      int newX = item.x + dir.dx.toInt();
-      int newY = item.y + dir.dy.toInt();
-      if (newX < 0 || newX + item.width > columns || newY < 0) return false;
-
-      GridItemData ghost = item.clone();
-      ghost.x = newX;
-      ghost.y = newY;
-
-      if (ghost.overlaps(draggingItem)) return false;
-
-      for (var other in allItems) {
-        if (other.id == draggingItem.id) continue;
-        if (!group.any((g) => g.id == other.id) && ghost.overlaps(other)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -360,57 +390,66 @@ void _updatePreview(int targetX, int targetY) {
                   if (activeDragId == null) return;
 
                   final RenderBox box = context.findRenderObject() as RenderBox;
-                  final Offset localOffset = box.globalToLocal(details.offset);
+  final Offset pointerLocalOffset = box.globalToLocal(details.offset);
+  
+  // 1. 计算左上角物理偏移
+  final Offset itemTopLeftOffset = pointerLocalOffset - dragGrabOffset;
+  
+  final draggingItem = items.firstWhere((e) => e.id == activeDragId);
 
-                  int newX = (localOffset.dx / actualCellSize).round();
-                  int newY = (localOffset.dy / actualCellSize).round();
-                  // 获取当前拖拽物体宽度以做边界限制
-                  final draggingItem =
-                      items.firstWhere((e) => e.id == activeDragId);
+  // 2. 基于中心点进行吸附计算
+  // 我们通过让中心点坐标除以格子大小取整，得到中心点所在的网格索引
+  // 然后减去磁贴自身跨度的一半，得到左上角的网格索引
+  int newX = ((itemTopLeftOffset.dx + (draggingItem.width * actualCellSize) / 2) / actualCellSize).floor() 
+             - (draggingItem.width / 2).floor();
+  int newY = ((itemTopLeftOffset.dy + (draggingItem.height * actualCellSize) / 2) / actualCellSize).floor() 
+             - (draggingItem.height / 2).floor();
 
-                  if (newX < 0) newX = 0;
-                  if (newX + draggingItem.width > columns)
-                    newX = columns - draggingItem.width;
-                  if (newY < 0) newY = 0;
+  // 3. 边界限制
+  if (newX < 0) newX = 0;
+  if (newX + draggingItem.width > columns) {
+    newX = columns - draggingItem.width;
+  }
+  if (newY < 0) newY = 0;
 
-                  // 位置发生变化，重新计时
                   if (newX != lastHoverX || newY != lastHoverY) {
                     lastHoverX = newX;
                     lastHoverY = newY;
 
                     hoverTimer?.cancel();
-
-                    // 如果需要立即返回布局A，可以在这里setState(items = originalItems)
-                    // 但通常保留当前预览会更顺滑，直接等待100ms重新计算新C即可
-
                     hoverTimer = Timer(const Duration(milliseconds: 100), () {
                       _updatePreview(newX, newY);
                     });
                   }
                 },
                 onAcceptWithDetails: (details) {
+                  debugPrint('onAcceptWithDetails: ${details.data.id}');
                   if (activeDragId != null) {
-                    final RenderBox box =
-                        context.findRenderObject() as RenderBox;
-                    final Offset localOffset =
-                        box.globalToLocal(details.offset);
+                    final RenderBox box = context.findRenderObject() as RenderBox;
+  final Offset pointerLocalOffset = box.globalToLocal(details.offset);
+  
+  // 1. 计算左上角物理偏移
+  final Offset itemTopLeftOffset = pointerLocalOffset - dragGrabOffset;
+  
+  final draggingItem = items.firstWhere((e) => e.id == activeDragId);
 
-                    int newX = (localOffset.dx / actualCellSize).round();
-                    int newY = (localOffset.dy / actualCellSize).round();
+  // 2. 基于中心点进行吸附计算
+  // 我们通过让中心点坐标除以格子大小取整，得到中心点所在的网格索引
+  // 然后减去磁贴自身跨度的一半，得到左上角的网格索引
+  int newX = ((itemTopLeftOffset.dx + (draggingItem.width * actualCellSize) / 2) / actualCellSize).floor() 
+             - (draggingItem.width / 2).floor();
+  int newY = ((itemTopLeftOffset.dy + (draggingItem.height * actualCellSize) / 2) / actualCellSize).floor() 
+             - (draggingItem.height / 2).floor();
 
-                    debugPrint(
-                        'Drag accepted at local offset: $localOffset, grid pos: ($newX, $newY)');
+  // 3. 边界限制
+  if (newX < 0) newX = 0;
+  if (newX + draggingItem.width > columns) {
+    newX = columns - draggingItem.width;
+  }
+  if (newY < 0) newY = 0;
 
-                    final draggingItem =
-                        items.firstWhere((e) => e.id == activeDragId);
-
-                    if (newX < 0) newX = 0;
-                    if (newX + draggingItem.width > columns)
-                      newX = columns - draggingItem.width;
-                    if (newY < 0) newY = 0;
-
-                    // 放下时立刻做最后一次确认计算
                     _updatePreview(newX, newY);
+                    _finalizeLayout();
                   }
                   _onDragEnd();
                 },
@@ -437,40 +476,47 @@ void _updatePreview(int targetX, int targetY) {
                       top: item.y * actualCellSize,
                       width: item.width * actualCellSize,
                       height: item.height * actualCellSize,
-                      child: Draggable<GridItemData>(
-                        data: item,
-                        onDragStarted: () => _onDragStarted(item.id),
-                        onDraggableCanceled: (_, __) => _onDragCanceled(),
-                        // 【修复】在被拖走后的真实坑位显示一个半透明虚拟物体占位符
-                        childWhenDragging: const SizedBox.shrink(),
-                        // Container(
-                        //   margin: const EdgeInsets.all(2),
-                        //   decoration: BoxDecoration(
-                        //     color: item.color.withOpacity(0.3),
-                        //     border: Border.all(
-                        //         color: item.color,
-                        //         width: 2,
-                        //         style: BorderStyle.solid),
-                        //   ),
-                        // ),
-                        feedback: Material(
-                          color: Colors.transparent,
+                      // --- 修改区：用 Listener 包裹 Draggable ---
+                      child: Listener(
+                        onPointerDown: (event) {
+                          // 记录手指按下时相对于当前磁贴左上角的坐标
+                          dragGrabOffset = event.localPosition;
+                        },
+                        child: Draggable<GridItemData>(
+                          data: item,
+                          onDragStarted: () => _onDragStarted(item.id),
+                          onDraggableCanceled: (_, __) => _onDragCanceled(),
+                          childWhenDragging: //const SizedBox.shrink(),
+                            Container(
+                            margin: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: item.color.withOpacity(0.3),
+                              border: Border.all(
+                                  color: item.color,
+                                  width: 2,
+                                  style: BorderStyle.solid),
+                            ),
+                          ),
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: Container(
+                              width: item.width * actualCellSize,
+                              height: item.height * actualCellSize,
+                              color: item.color.withOpacity(0.8),
+                              child: Center(
+                                  child: Text(item.id,
+                                      style: const TextStyle(
+                                          color: Colors.black))),
+                            ),
+                          ),
                           child: Container(
-                            width: item.width * actualCellSize,
-                            height: item.height * actualCellSize,
-                            color: item.color.withOpacity(0.8),
+                            margin: const EdgeInsets.all(2),
+                            color: item.color,
                             child: Center(
                                 child: Text(item.id,
                                     style:
                                         const TextStyle(color: Colors.black))),
                           ),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.all(2),
-                          color: item.color,
-                          child: Center(
-                              child: Text(item.id,
-                                  style: const TextStyle(color: Colors.black))),
                         ),
                       ),
                     );
