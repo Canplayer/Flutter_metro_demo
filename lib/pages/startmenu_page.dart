@@ -84,10 +84,18 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
   final double cellSize = 60.0;
 
   List<GridItemData> items = [
-    GridItemData(id: '1', x: 0, y: 0, width: 1, height: 1, color: Colors.red),
     GridItemData(
-        id: '2', x: 1, y: 0, width: 2, height: 2, color: Colors.yellow),
-    GridItemData(id: '3', x: 3, y: 0, width: 4, height: 2, color: Colors.green),
+        id: '1', x: 0, y: 0, width: 2, height: 2, color: Colors.yellow),
+    GridItemData(
+        id: '2', x: 2, y: 0, width: 1, height: 1, color: Colors.yellow),
+        GridItemData(
+        id: '3', x: 3, y: 0, width: 1, height: 1, color: Colors.yellow),
+            GridItemData(
+        id: '4', x: 2, y: 1, width: 1, height: 1, color: Colors.yellow),
+        GridItemData(
+        id: '5', x: 3, y: 1, width: 1, height: 1, color: Colors.yellow),
+        GridItemData(
+        id: '6', x: 0, y: 2, width: 4, height: 2, color: Colors.yellow),
   ];
 
   List<GridItemData>? originalItems;
@@ -128,55 +136,206 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
     _onDragEnd();
   }
 
-  void _updatePreview(int targetX, int targetY) {
+void _updatePreview(int targetX, int targetY) {
     if (originalItems == null || activeDragId == null) return;
 
-    // 从布局A重新计算布局C/B
-    List<GridItemData> newPreview =
-        originalItems!.map((e) => e.clone()).toList();
-    GridItemData targetItem =
-        newPreview.firstWhere((e) => e.id == activeDragId);
-
+    List<GridItemData> nextLayout = originalItems!.map((e) => e.clone()).toList();
+    GridItemData targetItem = nextLayout.firstWhere((e) => e.id == activeDragId);
     targetItem.x = targetX;
     targetItem.y = targetY;
 
-    debugPrint(
-        'Preview update: targetItem ${targetItem.id} to ($targetX, $targetY)');
+    // 1. 找出直接与拖拽物重叠的物体
+    List<GridItemData> directCollisions = nextLayout
+        .where((item) => item.id != targetItem.id && item.overlaps(targetItem))
+        .toList();
 
-    // 解决重叠：将下方组件向下推
-    bool hasOverlap = true;
-    while (hasOverlap) {
-      hasOverlap = false;
+    if (directCollisions.isNotEmpty) {
+      bool moved = false;
 
-      // 1. targetItem把其他交叠的往下推
-      for (var i in newPreview) {
-        if (i.id != targetItem.id && i.overlaps(targetItem)) {
-          i.y = targetItem.y + targetItem.height;
-          hasOverlap = true;
+      // 定义尝试的方向：上、左、右、下
+      final directions = [const Offset(0, -1), const Offset(-1, 0), const Offset(1, 0), const Offset(0, 1)];
+
+      for (var dir in directions) {
+        // 计算该方向下，组需要移动到的“目标偏移量”
+        // 比如左移，偏移量 = (拖拽物左边界 - 组右边界)
+        int offsetX = 0;
+        int offsetY = 0;
+
+        if (dir.dx < 0) { // 向左
+          int groupRight = directCollisions.map((e) => e.x + e.width).reduce((a, b) => a > b ? a : b);
+          offsetX = targetItem.x - groupRight;
+        } else if (dir.dx > 0) { // 向右
+          int groupLeft = directCollisions.map((e) => e.x).reduce((a, b) => a < b ? a : b);
+          offsetX = (targetItem.x + targetItem.width) - groupLeft;
+        } else if (dir.dy < 0) { // 向上
+          int groupBottom = directCollisions.map((e) => e.y + e.height).reduce((a, b) => a > b ? a : b);
+          offsetY = targetItem.y - groupBottom;
+        } else if (dir.dy > 0) { // 向下
+          int groupTop = directCollisions.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+          offsetY = (targetItem.y + targetItem.height) - groupTop;
+        }
+
+        // 获取递归后的完整碰撞组
+        List<GridItemData> fullGroup = _findRecursiveGroup(nextLayout, directCollisions, targetItem, offsetX, offsetY);
+
+        if (_canMoveFullGroup(nextLayout, fullGroup, targetItem, offsetX, offsetY)) {
+          for (var item in fullGroup) {
+            item.x += offsetX;
+            item.y += offsetY;
+          }
+          moved = true;
+          break;
         }
       }
 
-      // 2. 其他组件相互之间如果由于下推产生了重叠，继续下推
-      for (var i in newPreview) {
-        for (var j in newPreview) {
-          if (i.id != targetItem.id &&
-              j.id != targetItem.id &&
-              i.id != j.id &&
-              i.overlaps(j)) {
-            // y值更大的被推下去
-            GridItemData lower = (i.y < j.y)
-                ? j
-                : ((i.y > j.y) ? i : (i.id.compareTo(j.id) < 0 ? j : i));
-            lower.y += 1;
-            hasOverlap = true;
+      // 2. 保底方案：整体向下平移（插入行）
+      if (!moved) {
+        int minYOfImpacted = directCollisions.fold(targetItem.y, (prev, e) => e.y < prev ? e.y : prev);
+        for (var item in nextLayout) {
+          if (item.id != targetItem.id && item.y >= minYOfImpacted) {
+            item.y += targetItem.height;
           }
         }
       }
     }
 
+    // 3. 最终碰撞清理 & 消除空行
+    //_resolveCascadingOverlaps(nextLayout, targetItem);
+    _compactLayout(nextLayout);
+
     setState(() {
-      items = newPreview;
+      items = nextLayout;
     });
+  }
+
+  // 递归寻找所有受影响的物体
+  List<GridItemData> _findRecursiveGroup(List<GridItemData> allItems, List<GridItemData> currentGroup, GridItemData draggingItem, int dx, int dy) {
+    List<GridItemData> totalGroup = List.from(currentGroup);
+    bool added;
+    do {
+      added = false;
+      List<GridItemData> toAdd = [];
+      for (var member in totalGroup) {
+        // 模拟成员移动后的位置
+        GridItemData ghost = member.clone();
+        ghost.x += dx;
+        ghost.y += dy;
+
+        for (var other in allItems) {
+          if (other.id == draggingItem.id || totalGroup.any((m) => m.id == other.id)) continue;
+          if (ghost.overlaps(other)) {
+            toAdd.add(other);
+            added = true;
+          }
+        }
+      }
+      totalGroup.addAll(toAdd);
+    } while (added);
+    return totalGroup;
+  }
+
+  // 检查整个递归后的组是否可以移动到新位置
+  bool _canMoveFullGroup(List<GridItemData> allItems, List<GridItemData> group, GridItemData draggingItem, int dx, int dy) {
+    for (var item in group) {
+      int nx = item.x + dx;
+      int ny = item.y + dy;
+      
+      // 边界检查
+      if (nx < 0 || nx + item.width > columns || ny < 0) return false;
+
+      GridItemData ghost = item.clone();
+      ghost.x = nx; ghost.y = ny;
+
+      // 不能与拖拽物重叠
+      if (ghost.overlaps(draggingItem)) return false;
+
+      // 理论上递归组不会与其他静态物体重叠，因为重叠的都被拉进组了
+      // 但如果撞到了无法移动的边界或逻辑错误，这里做最终把关
+    }
+    return true;
+  }
+
+
+  /// 消除空行逻辑
+  void _compactLayout(List<GridItemData> allItems) {
+    // 找到当前布局的最大高度
+    int maxY = allItems.fold(
+        0, (max, e) => e.y + e.height > max ? e.y + e.height : max);
+
+    // 从第一行开始向下检查
+    for (int y = 0; y < maxY; y++) {
+      // 检查当前行 y 是否有任何磁贴占用
+      // 磁贴占用行的条件是：y >= item.y && y < (item.y + item.height)
+      bool isRowOccupied =
+          allItems.any((item) => y >= item.y && y < item.y + item.height);
+
+      if (!isRowOccupied) {
+        // 如果这一行是空的，检查上方是否还有磁贴（防止把最顶部的空行也算进去，虽然 y 从 0 开始不会有此问题）
+        // 且下方必须有磁贴才需要“坍缩”
+        bool hasItemsBelow = allItems.any((item) => item.y > y);
+
+        if (hasItemsBelow) {
+          // 将所有在空行下方的磁贴向上移动 1 格
+          for (var item in allItems) {
+            if (item.y > y) {
+              item.y -= 1;
+            }
+          }
+          // 因为移动了，所以当前行号 y 需要重新检查一次，同时最大高度也减小了
+          y--;
+          maxY--;
+        }
+      }
+    }
+  }
+
+  // 辅助函数：处理连锁重叠（始终向下推）
+  void _resolveCascadingOverlaps(
+      List<GridItemData> allItems, GridItemData targetItem) {
+    bool hasOverlap = true;
+    int safetyCounter = 0; // 防止无限循环
+    while (hasOverlap && safetyCounter < 50) {
+      hasOverlap = false;
+      safetyCounter++;
+      for (var i in allItems) {
+        for (var j in allItems) {
+          if (i.id != j.id && i.overlaps(j)) {
+            // 永远让非拖拽物或者是更靠下的物体往下走
+            GridItemData topper = (i.id == targetItem.id)
+                ? i
+                : (j.id == targetItem.id ? j : (i.y <= j.y ? i : j));
+            GridItemData lower = (topper == i) ? j : i;
+
+            lower.y = topper.y + topper.height;
+            hasOverlap = true;
+          }
+        }
+      }
+    }
+  }
+
+  // 检测组是否可以移动（保持原样）
+  bool _canMoveGroupTogether(List<GridItemData> allItems,
+      List<GridItemData> group, GridItemData draggingItem, Offset dir) {
+    for (var item in group) {
+      int newX = item.x + dir.dx.toInt();
+      int newY = item.y + dir.dy.toInt();
+      if (newX < 0 || newX + item.width > columns || newY < 0) return false;
+
+      GridItemData ghost = item.clone();
+      ghost.x = newX;
+      ghost.y = newY;
+
+      if (ghost.overlaps(draggingItem)) return false;
+
+      for (var other in allItems) {
+        if (other.id == draggingItem.id) continue;
+        if (!group.any((g) => g.id == other.id) && ghost.overlaps(other)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   @override
@@ -279,44 +438,41 @@ class _MetroDraggableGridState extends State<MetroDraggableGrid> {
                       width: item.width * actualCellSize,
                       height: item.height * actualCellSize,
                       child: Draggable<GridItemData>(
-                          data: item,
-                          onDragStarted: () => _onDragStarted(item.id),
-                          onDraggableCanceled: (_, __) => _onDragCanceled(),
-                          // 【修复】在被拖走后的真实坑位显示一个半透明虚拟物体占位符
-                          childWhenDragging: 
-                          const SizedBox.shrink(),
-                          // Container(
-                          //   margin: const EdgeInsets.all(2),
-                          //   decoration: BoxDecoration(
-                          //     color: item.color.withOpacity(0.3),
-                          //     border: Border.all(
-                          //         color: item.color,
-                          //         width: 2,
-                          //         style: BorderStyle.solid),
-                          //   ),
-                          // ),
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: Container(
-                              width: item.width * actualCellSize,
-                              height: item.height * actualCellSize,
-                              color: item.color.withOpacity(0.8),
-                              child: Center(
-                                  child: Text(item.id,
-                                      style: const TextStyle(
-                                          color: Colors.black))),
-                            ),
-                          ),
+                        data: item,
+                        onDragStarted: () => _onDragStarted(item.id),
+                        onDraggableCanceled: (_, __) => _onDragCanceled(),
+                        // 【修复】在被拖走后的真实坑位显示一个半透明虚拟物体占位符
+                        childWhenDragging: const SizedBox.shrink(),
+                        // Container(
+                        //   margin: const EdgeInsets.all(2),
+                        //   decoration: BoxDecoration(
+                        //     color: item.color.withOpacity(0.3),
+                        //     border: Border.all(
+                        //         color: item.color,
+                        //         width: 2,
+                        //         style: BorderStyle.solid),
+                        //   ),
+                        // ),
+                        feedback: Material(
+                          color: Colors.transparent,
                           child: Container(
-                            margin: const EdgeInsets.all(2),
-                            color: item.color,
+                            width: item.width * actualCellSize,
+                            height: item.height * actualCellSize,
+                            color: item.color.withOpacity(0.8),
                             child: Center(
                                 child: Text(item.id,
                                     style:
                                         const TextStyle(color: Colors.black))),
                           ),
                         ),
-                      
+                        child: Container(
+                          margin: const EdgeInsets.all(2),
+                          color: item.color,
+                          child: Center(
+                              child: Text(item.id,
+                                  style: const TextStyle(color: Colors.black))),
+                        ),
+                      ),
                     );
                   }),
                 ],
