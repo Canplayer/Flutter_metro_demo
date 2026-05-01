@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:metro_demo/pages/about_page.dart';
 import 'package:metro_demo/pages/safearea.dart';
 import 'package:metro_demo/pages/spinner_demo_page.dart';
+import 'package:metro_demo/pages/startmenu2_page.dart';
 import 'package:metro_demo/pages/startmenu_page.dart';
 import 'package:metro_ui/animated_widgets.dart';
 import 'package:metro_demo/pages/panorama_page.dart';
@@ -189,28 +190,52 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
             page: const SafeAreaPage()),
         App(
-            name: 'StartMenu',
-            tile: const LiveTile(
-              size: LiveTileSize.medium,
-              flipStyle: FlipStyle.elastic,
-              name: Text('StartMenu'),
-              children: [
-                MetroAppTile(
-                  icon: Icon(
-                    Icons.menu,
-                    size: 70,
-                  ),
+          name: 'StartMenu',
+          tile: const LiveTile(
+            size: LiveTileSize.medium,
+            flipStyle: FlipStyle.elastic,
+            name: Text('StartMenu'),
+            children: [
+              MetroAppTile(
+                icon: Icon(
+                  Icons.menu,
+                  size: 70,
                 ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'StartMenu',
-                    style: TextStyle(fontSize: 18),
-                  ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'StartMenu',
+                  style: TextStyle(fontSize: 18),
                 ),
-              ],
-            ),
-            page: const StartMenu(),
+              ),
+            ],
+          ),
+          page: const StartMenu(),
+        ),
+        App(
+          name: 'StartMenu2',
+          tile: const LiveTile(
+            size: LiveTileSize.medium,
+            flipStyle: FlipStyle.elastic,
+            name: Text('StartMenu2'),
+            children: [
+              MetroAppTile(
+                icon: Icon(
+                  Icons.menu,
+                  size: 70,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text(
+                  'StartMenu2',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          page: const StartMenu2(),
         ),
       ];
 
