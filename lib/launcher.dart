@@ -235,7 +235,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          page: const StartMenu2(),
+          page: Windows10StartMenu(),
         ),
       ];
 
